@@ -116,6 +116,7 @@ fn player_shooting(
             let x = player_tf.translation.x;
             let y = player_tf.translation.y;
 
+            // TODO: REFACTOR Based on weapon queried
             let mut spawn_lasers = |x_offset: f32| {
                 commands
                     .spawn_bundle(SpriteBundle {
@@ -134,7 +135,6 @@ fn player_shooting(
                     .insert(Velocity::from(Vec2::new(0., weapon_state.projectile_speed)))
                     ;
             };
-
             spawn_lasers(0.);
 
             // Set weapon state

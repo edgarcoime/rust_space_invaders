@@ -40,6 +40,7 @@ enum GameState {
 // region:      Resources
 #[derive(Default)]
 pub struct Game {
+    active_enemies: i32,
 }
 
 pub struct SpriteInfos {

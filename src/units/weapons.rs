@@ -90,3 +90,6 @@ fn move_player_projectiles (
         }
     }
 }
+
+// region:      SpriteGenerators
+// endregion:   SpriteGenerators
