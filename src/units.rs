@@ -1,9 +1,10 @@
 mod enemy;
 mod player;
+mod weapons;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
-use self::{enemy::EnemyPlugin, player::PlayerPlugin};
+use self::{enemy::EnemyPlugin, player::PlayerPlugin, weapons::WeaponsPlugin};
 
 // TODO: Shared resources among "units"
 //  - health
@@ -13,6 +14,10 @@ use self::{enemy::EnemyPlugin, player::PlayerPlugin};
 //  - damage
 
 // Must export not just a plugin but a multitude of plugins
+
+// region:      Constants
+const DEFAULT_WEAPON_COOLDOWN: f32 = 100.;
+// endregion:   Constants
 
 // region:      Resources
 // endregion:   Resources
@@ -39,6 +44,14 @@ impl Default for Velocity {
         Self(250.)
     }
 }
+impl Velocity {
+    fn normal_projectile() -> Self {
+        Self(600.)
+    }
+}
+
+
+
 // endregion:   Components
 
 // region:      Entities
@@ -50,6 +63,7 @@ impl PluginGroup for UnitsPluginGroup {
         group
             .add(PlayerPlugin)
             .add(EnemyPlugin)
+            .add(WeaponsPlugin)
             ;
     }
 }

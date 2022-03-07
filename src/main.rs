@@ -23,6 +23,8 @@ const PLAYER_SPRITE: &str = "player.png";
 const RED_ENEMY_SPRITE: &str = "red.png";
 const GREEN_ENEMY_SPRITE: &str = "green.png";
 const YELLOW_ENEMY_SPRITE: &str = "yellow.png";
+
+const PLAYER_LASER_SPRITE: &str = "laser_a_01.png";
 // endregion:   Assets
 
 // region:      States
@@ -42,6 +44,7 @@ pub struct Game {
 
 pub struct SpriteInfos {
     player: (Handle<Image>, Vec2),
+    player_laser: (Handle<Image>, Vec2),
     red_enemy: (Handle<Image>, Vec2),
     green_enemy: (Handle<Image>, Vec2),
     yellow_enemy: (Handle<Image>, Vec2),
@@ -99,10 +102,11 @@ fn setup(
 
     // Create main resources
     commands.insert_resource(SpriteInfos {
-        player: load_image(&mut images, PLAYER_SPRITE),
-        red_enemy: load_image(&mut images, RED_ENEMY_SPRITE),
-        green_enemy: load_image(&mut images, GREEN_ENEMY_SPRITE),
-        yellow_enemy: load_image(&mut images, YELLOW_ENEMY_SPRITE),
+        player: load_image(&mut images, SPRITE_DIR, PLAYER_SPRITE),
+        red_enemy: load_image(&mut images, SPRITE_DIR, RED_ENEMY_SPRITE),
+        green_enemy: load_image(&mut images, SPRITE_DIR, GREEN_ENEMY_SPRITE),
+        yellow_enemy: load_image(&mut images, SPRITE_DIR, YELLOW_ENEMY_SPRITE),
+        player_laser: load_image(&mut images, SPRITE_DIR, PLAYER_LASER_SPRITE),
     });
     commands.insert_resource(WinSize {
         w: window.width(),
