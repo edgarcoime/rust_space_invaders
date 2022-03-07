@@ -7,7 +7,7 @@ use super::{Velocity, player::FromPlayer};
 #[derive(Component)]
 pub struct WeaponState {
     pub ready: bool,
-    pub cooldown: f32,
+    pub cooldown: f64,
     pub last_fired: f64,
     pub velocity: Velocity
 }
@@ -15,7 +15,7 @@ impl Default for WeaponState {
     fn default() -> Self {
         Self {
             ready: true,
-            cooldown: 100.,
+            cooldown: 0.3,
             last_fired: 0.,
             velocity: Velocity::normal_projectile()
         }
@@ -58,7 +58,8 @@ pub fn manage_all_weapons_state (
         let now = time.seconds_since_startup();
         let last_shot = w_state.last_fired;
 
-        if w_state.last_fired == 0. || now > last_shot {
+        if w_state.last_fired == 0. || now > last_shot + w_state.cooldown {
+            println!("No reset?");
             w_state.reset();
         }
     }
