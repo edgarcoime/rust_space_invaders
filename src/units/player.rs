@@ -60,25 +60,29 @@ fn player_spawn (
         .insert(Health::default())
         .insert(PlayerName("Player 1".to_string()))
         ;
-    println!("Player succesfully spawned");
 }
 
 fn player_movement(
     kb_in: Res<Input<KeyCode>>,
+    win_size: Res<WinSize>,
+    sprite_infos: Res<SpriteInfos>,
     mut q: Query<(&Velocity, &mut Transform), With<Player>>,
 ) {
     if let Ok((vel, mut tf)) = q.get_single_mut() {
         // TODO: QUERY WILL TRY TO MATCH ALL OF DESIRED
         // SO WILL NOT WORK IF YOUR DESIRED DOES NOT IMPLEMENT BOTH COMPONENTS
-        let dir =
+        let player_sprite_x = sprite_infos.player.1.x;
+        let target_bounds_x = win_size.w/2. - player_sprite_x/2.;
         if kb_in.pressed(KeyCode::Left) || kb_in.pressed(KeyCode::A) {
-            -1.
+            let desired_x = tf.translation.x + (-1. * vel.0 * GAME_TIME_STEP);
+            if desired_x > -target_bounds_x {
+                tf.translation.x = desired_x
+            }
         } else if kb_in.pressed(KeyCode::Right) || kb_in.pressed(KeyCode::D) {
-            1.
-        } else {
-            0.
+            let desired_x = tf.translation.x + (1. * vel.0 * GAME_TIME_STEP);
+            if desired_x < target_bounds_x {
+                tf.translation.x = desired_x
+            }
         };
-
-        tf.translation.x += dir * vel.0 * GAME_TIME_STEP;
     }
 }
