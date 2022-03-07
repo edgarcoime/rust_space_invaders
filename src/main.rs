@@ -3,6 +3,7 @@ mod units;
 mod utils;
 
 use bevy::prelude::*;
+use units::UnitsPluginGroup;
 use utils::load_image;
 
 // region:      Constants
@@ -46,6 +47,9 @@ fn main() {
 
         // Insert builtins
         .add_startup_system(setup)
+
+        // Plugins
+        .add_plugins(UnitsPluginGroup)
 
         .run()
 }
