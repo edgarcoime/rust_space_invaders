@@ -4,25 +4,35 @@ use crate::{WinSize, GAME_TIME_STEP};
 
 use super::{Velocity, player::FromPlayer};
 
+const DEFAULT_WEAPON_COOLDOWN: f64 = 0.3;
+
 #[derive(Component)]
 pub struct WeaponState {
     pub ready: bool,
     pub cooldown: f64,
     pub last_fired: f64,
-    pub velocity: Velocity
+    pub projectile_speed: f32,
 }
 impl Default for WeaponState {
     fn default() -> Self {
         Self {
             ready: true,
-            cooldown: 0.3,
+            cooldown: DEFAULT_WEAPON_COOLDOWN,
             last_fired: 0.,
-            velocity: Velocity::normal_projectile()
+            projectile_speed: 600.,
         }
     }
 }
-
 impl WeaponState {
+    pub fn fast_normal_weapon() -> Self {
+        Self {
+            ready: true,
+            cooldown: 0.2,
+            last_fired: 0.,
+            projectile_speed: 700.,
+        }
+    }
+
     pub fn fired(&mut self, time: f64) {
         self.ready = false;
         self.last_fired = time;
@@ -43,7 +53,6 @@ impl Plugin for WeaponsPlugin {
         app
             .add_system(manage_all_weapons_state)
             .add_system(move_player_projectiles)
-
         ;
     }
 }
@@ -59,7 +68,6 @@ pub fn manage_all_weapons_state (
         let last_shot = w_state.last_fired;
 
         if w_state.last_fired == 0. || now > last_shot + w_state.cooldown {
-            println!("No reset?");
             w_state.reset();
         }
     }
@@ -73,7 +81,8 @@ fn move_player_projectiles (
     for (proj_entity, vel, mut proj_tf) in q.iter_mut() {
         let translation = &mut proj_tf.translation;
         // // TODO calculate vector for diagonal projectiles 
-        translation.y += vel.0 * GAME_TIME_STEP;
+        translation.y += vel.0.y * GAME_TIME_STEP;
+        translation.x += vel.0.x * GAME_TIME_STEP;
 
         // Despawn laser if it goes beyond bounds
         if translation.y > win_size.h {

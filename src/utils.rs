@@ -1,6 +1,5 @@
 use std::path::Path;
 use bevy::{prelude::*, render::texture::ImageType};
-use crate::SPRITE_DIR;
 
 
 pub fn load_image(images: &mut ResMut<Assets<Image>>, dir: &str, filename: &str) -> (Handle<Image>, Vec2) {

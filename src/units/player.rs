@@ -2,7 +2,7 @@ use bevy::{prelude::*};
 
 use crate::{SpriteInfos, WinSize, GAME_TIME_STEP};
 
-use super::{Health, Velocity, weapons::{WeaponState, Projectile}};
+use super::{Health, Velocity, weapons::{WeaponState, Projectile}, MovementSpeed};
 
 // region:      Resources
 // endregion:   Resources
@@ -23,7 +23,8 @@ struct PlayerBundle {
     name: PlayerName,
     health: Health,
     velocity: Velocity,
-    main_weapon_state: WeaponState
+    movement_speed: MovementSpeed,
+    main_weapon_state: WeaponState,
 }
 impl Default for PlayerBundle {
     fn default() -> Self {
@@ -31,8 +32,9 @@ impl Default for PlayerBundle {
             _p: Player,
             name: PlayerName("Player 1".to_string()),
             health: Health::default(),
-            velocity: Velocity::default(),
-            main_weapon_state: WeaponState::default(),
+            velocity: Velocity::from(Vec2::new(0., 0.)),
+            main_weapon_state: WeaponState::fast_normal_weapon(),
+            movement_speed: MovementSpeed(250.),
         }
     }
 }
@@ -80,20 +82,21 @@ fn player_movement(
     kb_in: Res<Input<KeyCode>>,
     win_size: Res<WinSize>,
     sprite_infos: Res<SpriteInfos>,
-    mut q: Query<(&Velocity, &mut Transform), With<Player>>,
+    mut q: Query<(&Velocity, &MovementSpeed, &mut Transform), With<Player>>,
 ) {
-    if let Ok((vel, mut tf)) = q.get_single_mut() {
+    if let Ok((vel, mov_spd, mut tf)) = q.get_single_mut() {
         // TODO: QUERY WILL TRY TO MATCH ALL OF DESIRED
         // SO WILL NOT WORK IF YOUR DESIRED DOES NOT IMPLEMENT BOTH COMPONENTS
-        let player_sprite_x = sprite_infos.player.1.x;
+        let player_dimensions = sprite_infos.player.1;
+        let player_sprite_x = player_dimensions.x;
         let target_bounds_x = win_size.w/2. - player_sprite_x/2.;
         if kb_in.pressed(KeyCode::Left) || kb_in.pressed(KeyCode::A) {
-            let desired_x = tf.translation.x + (-1. * vel.0 * GAME_TIME_STEP);
+            let desired_x = tf.translation.x + (-1. * mov_spd.0 * GAME_TIME_STEP);
             if desired_x > -target_bounds_x {
                 tf.translation.x = desired_x
             }
         } else if kb_in.pressed(KeyCode::Right) || kb_in.pressed(KeyCode::D) {
-            let desired_x = tf.translation.x + (1. * vel.0 * GAME_TIME_STEP);
+            let desired_x = tf.translation.x + (1. * mov_spd.0 * GAME_TIME_STEP);
             if desired_x < target_bounds_x {
                 tf.translation.x = desired_x
             }
@@ -127,7 +130,8 @@ fn player_shooting(
                     .insert(Projectile)
                     .insert(FromPlayer)
                     // Set new Velocity based on weapon state
-                    .insert(Velocity(weapon_state.velocity.0))
+                    // TODO: How to create different weapons?
+                    .insert(Velocity::from(Vec2::new(0., weapon_state.projectile_speed)))
                     ;
             };
 

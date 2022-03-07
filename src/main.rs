@@ -93,6 +93,11 @@ fn setup(
     mut images: ResMut<Assets<Image>>,
     asset_server: Res<AssetServer>,
 ) {
+    let v1 = Vec2::new(12., 12.);
+    let v2 = Vec2::new(12., 12.);
+    println!("{}", (v1 + v2));
+    println!("{}", -(v1 + v2));
+
     println!("Main setup");
     // camera
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());

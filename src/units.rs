@@ -16,13 +16,15 @@ use self::{enemy::EnemyPlugin, player::PlayerPlugin, weapons::WeaponsPlugin};
 // Must export not just a plugin but a multitude of plugins
 
 // region:      Constants
-const DEFAULT_WEAPON_COOLDOWN: f32 = 100.;
 // endregion:   Constants
 
 // region:      Resources
 // endregion:   Resources
 
 // region:      Components
+#[derive(Component)]
+pub struct MovementSpeed(f32);
+
 #[derive(Component)]
 struct Health {
     original_hp: u32,
@@ -38,19 +40,21 @@ impl Default for Health {
 struct ExperiencePoints(u32);
 
 #[derive(Component)]
-pub struct Velocity(f32);
+pub struct Velocity(Vec2);
 impl Default for Velocity {
     fn default() -> Self {
-        Self(250.)
+        Self(Vec2::new(0., 600.))
     }
 }
 impl Velocity {
+    fn from(vel: Vec2) -> Self {
+        Self(vel)
+    }
+
     fn normal_projectile() -> Self {
-        Self(600.)
+        Self(Vec2::new(0., 600.))
     }
 }
-
-
 
 // endregion:   Components
 
