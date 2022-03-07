@@ -36,7 +36,7 @@ struct ExperiencePoints(u32);
 pub struct Velocity(f32);
 impl Default for Velocity {
     fn default() -> Self {
-        Self(100.)
+        Self(250.)
     }
 }
 // endregion:   Components

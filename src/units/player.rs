@@ -1,4 +1,4 @@
-use bevy::{prelude::*, ecs::system::Insert, transform};
+use bevy::{prelude::*};
 
 use crate::{SpriteInfos, WinSize, GAME_TIME_STEP};
 
@@ -14,12 +14,12 @@ struct PlayerName(String);
 #[derive(Component)]
 pub struct Player;
 
-#[derive(Bundle)]
-struct PlayerBundle {
-    name: PlayerName,
-    health: Health,
-    _p: Player,
-}
+// #[derive(Bundle)]
+// struct PlayerBundle {
+//     name: PlayerName,
+//     health: Health,
+//     _p: Player,
+// }
 // endregion:   Components
 
 // region:      Entities
@@ -56,6 +56,7 @@ fn player_spawn (
             ..Default::default()
         })
         .insert(Player)
+        .insert(Velocity::default())
         .insert(Health::default())
         .insert(PlayerName("Player 1".to_string()))
         ;
@@ -66,9 +67,9 @@ fn player_movement(
     kb_in: Res<Input<KeyCode>>,
     mut q: Query<(&Velocity, &mut Transform), With<Player>>,
 ) {
-    if let Ok((vel, mut tf)) = 
-    q.get_single_mut() {
-        println!("Player movement found player");
+    if let Ok((vel, mut tf)) = q.get_single_mut() {
+        // TODO: QUERY WILL TRY TO MATCH ALL OF DESIRED
+        // SO WILL NOT WORK IF YOUR DESIRED DOES NOT IMPLEMENT BOTH COMPONENTS
         let dir =
         if kb_in.pressed(KeyCode::Left) || kb_in.pressed(KeyCode::A) {
             -1.
