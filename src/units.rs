@@ -18,6 +18,15 @@ use self::{enemy::EnemyPlugin, player::PlayerPlugin};
 // endregion:   Resources
 
 // region:      Components
+#[derive(Component)]
+struct Health {
+    original_hp: u32,
+    current_hp: u32,
+}
+
+#[derive(Component)]
+struct ExperiencePoints(u32);
+
 // endregion:   Components
 
 // region:      Entities

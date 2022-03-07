@@ -22,20 +22,46 @@ const GREEN_ENEMY_SPRITE: &str = "green.png";
 const YELLOW_ENEMY_SPRITE: &str = "yellow.png";
 // endregion:   Assets
 
+// region:      States
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+enum GameState {
+    MainMenu,
+    InGame,
+    Paused,
+    GameOver,
+}
+// endregion:   States
+
 // region:      Resources
+#[derive(Default)]
+pub struct Game {
+}
+
 pub struct SpriteInfos {
     player: (Handle<Image>, Vec2),
     red_enemy: (Handle<Image>, Vec2),
     green_enemy: (Handle<Image>, Vec2),
     yellow_enemy: (Handle<Image>, Vec2),
 }
+
+pub struct WinSize {
+    w: f32,
+    h: f32,
+}
 // endregion:   Resources
 
 // region:      Components
 // endregion:   Components
 
+// region:      Entities
+// endregion:   Entities
+
 fn main() {
     App::new()
+        // Initial setup
+        .add_state(GameState::InGame)
+        .init_resource::<Game>()
+
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .insert_resource(WindowDescriptor {
             title: "".to_string(),
@@ -72,6 +98,10 @@ fn setup(
         red_enemy: load_image(&mut images, RED_ENEMY_SPRITE),
         green_enemy: load_image(&mut images, GREEN_ENEMY_SPRITE),
         yellow_enemy: load_image(&mut images, YELLOW_ENEMY_SPRITE),
+    });
+    commands.insert_resource(WinSize {
+        w: window.width(),
+        h: window.height(),
     });
 
     // position window

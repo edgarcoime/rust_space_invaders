@@ -6,6 +6,8 @@ use bevy::prelude::*;
 // endregion:   Resources
 
 // region:      Components
+#[derive(Component)]
+struct Enemy;
 // endregion:   Components
 
 // region:      Entities
