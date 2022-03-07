@@ -1,14 +1,17 @@
 mod system;
 mod units;
 mod utils;
+mod diagnostics;
 
 use bevy::prelude::*;
+use diagnostics::DiagnosticsPluginGroup;
 use units::UnitsPluginGroup;
 use utils::load_image;
 
 // region:      Constants
 const WINDOW_WIDTH: f32 = 600.0;
 const WINDOW_HEIGHT: f32 = 600.0;
+const GAME_TIME_STEP: f32 = 1. / 60.;
 // endregion:   Constants
 
 // region:      Assets
@@ -70,12 +73,13 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
+        .add_plugins(DiagnosticsPluginGroup)// Debug
+        .add_plugins(UnitsPluginGroup)
 
         // Insert builtins
         .add_startup_system(setup)
 
         // Plugins
-        .add_plugins(UnitsPluginGroup)
 
         .run()
 }
@@ -86,11 +90,12 @@ fn setup(
     mut images: ResMut<Assets<Image>>,
     asset_server: Res<AssetServer>,
 ) {
+    println!("Main setup");
     // camera
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     // set window
-    let mut window = windows.get_primary_mut().unwrap();
+    let window = windows.get_primary_mut().unwrap();
 
     // Create main resources
     commands.insert_resource(SpriteInfos {
