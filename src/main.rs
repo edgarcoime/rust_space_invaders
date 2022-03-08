@@ -1,9 +1,15 @@
+// region:      Modules
 mod system;
 mod utils;
 mod diagnostics;
+mod entities;
+mod shared;
+// endregion:   Modules
 
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use diagnostics::DiagnosticsPluginGroup;
+use entities::EntitiesPluginGroup;
 use utils::load_image;
 
 // region:      Constants
@@ -75,7 +81,9 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(DiagnosticsPluginGroup)// Debug
+        .add_plugins(EntitiesPluginGroup)
 
         // Insert builtins
         .add_startup_system(setup)
@@ -89,7 +97,7 @@ fn setup(
     mut commands: Commands,
     mut windows: ResMut<Windows>,
     mut images: ResMut<Assets<Image>>,
-    asset_server: Res<AssetServer>,
+    // asset_server: Res<AssetServer>,
 ) {
     let v1 = Vec2::new(12., 12.);
     let v2 = Vec2::new(12., 12.);
