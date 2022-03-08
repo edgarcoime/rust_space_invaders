@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 
 use crate::{WinSize, SpriteInfos, shared::{Health, WeaponState, MovementSpeed, Projectile}, GAME_TIME_STEP};
 
@@ -84,34 +83,12 @@ fn player_shooting(
     time: Res<Time>,
     kb: Res<Input<KeyCode>>,
     sprite_infos: Res<SpriteInfos>,
-    rapier_config: ResMut<RapierConfiguration>,
 ) {
-    let scl = rapier_config.scale;
     if let Ok((player_tf, mut weapon_state)) = q.get_single_mut() {
         if weapon_state.ready && (kb.pressed(KeyCode::Space) || kb.pressed(KeyCode::Z)) {
             let x = player_tf.translation.x;
             let y = player_tf.translation.y;
-            let proposed_location = Vec2::new(x/scl, y/scl);
 
-            let rigid_body = RigidBodyBundle {
-                position: RigidBodyPosition {
-                    position: proposed_location.into(),
-                    ..Default::default()
-                }.into(),
-                velocity: RigidBodyVelocity { 
-                    linvel: Vec2::new(0., weapon_state.projectile_speed/scl).into(), 
-                    angvel: 0.0 
-                }.into(),
-                ..Default::default()
-            };
-            let collider = ColliderBundle {
-                collider_type: ColliderType::Solid.into(),
-                shape: ColliderShape::cuboid(
-                    (sprite_infos.player_laser.1.x / 2.) / scl,
-                    (sprite_infos.player_laser.1.y / 2.) / scl
-                ).into(),
-                ..Default::default()
-            };
             commands
                 .spawn()
                 .insert_bundle(SpriteBundle {
@@ -122,10 +99,7 @@ fn player_shooting(
                     },
                     ..Default::default()
                 })
-                .insert_bundle(rigid_body)
-                .insert_bundle(collider)
-                .insert(RigidBodyPositionSync::Discrete)
-                .insert(Projectile { velocity: Vec3::default() })
+                .insert(Projectile::default())
                 .insert(FromPlayer)
             ;
 

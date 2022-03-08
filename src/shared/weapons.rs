@@ -1,11 +1,14 @@
 use bevy::prelude::*;
-use bevy_rapier2d::{physics::{RapierConfiguration, IntoEntity}, prelude::{RigidBodyVelocity, ColliderPosition, RigidBodyVelocityComponent, ColliderPositionComponent, IntersectionEvent, ContactEvent, ColliderHandle}};
-
 use crate::{Game, entities::{FromPlayer, Enemy}};
 
 #[derive(Component)]
 pub struct Projectile {
-    pub velocity: Vec3,
+    damage: u32
+}
+impl Default for Projectile {
+    fn default() -> Self {
+        Self { damage: 1 }
+    }
 }
 
 #[derive(Component)]
@@ -41,8 +44,7 @@ impl Plugin for WeaponsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system(manage_all_weapons_state)
-            .add_system(display_events)
-            .add_system(player_projectiles_hit_enemy)
+            // .add_system(display_events)
         ;
     }
 }
@@ -58,56 +60,6 @@ fn manage_all_weapons_state (
 
         if w_state.last_fired == 0. || now > last_shot + w_state.cooldown {
             w_state.reset();
-        }
-    }
-}
-
-/* A system that displays the events. */
-// https://rapier.rs/docs/user_guides/bevy_plugin/advanced_collision_detection/
-fn display_events(
-    mut intersection_events: EventReader<IntersectionEvent>,
-    mut contact_events: EventReader<ContactEvent>,
-) {
-    for intersection_event in intersection_events.iter() {
-        println!("Received intersection event: {:?}", intersection_event);
-    }
-
-    for contact_event in contact_events.iter() {
-        println!("Received contact event: {:?}", contact_event);
-    }
-}
-
-fn player_projectiles_hit_enemy(
-    mut commands: Commands,
-    mut game: ResMut<Game>,
-    mut intersection_events: EventReader<IntersectionEvent>,
-    q_enemy: Query<Entity, With<Enemy>>,
-    q_player_proj: Query<Entity, (With<Projectile>, With<FromPlayer>)>,
-) {
-    for intersection_event in intersection_events.iter() {
-        // Find out how to specify only for specific colission groups
-        let entity1 = intersection_event.collider1.entity();
-        let entity2 = intersection_event.collider2.entity();
-
-        let mut en1_valid = false;
-        let mut en2_valid = false;
-
-        for e in q_enemy.iter() {
-            if e == entity1 || e == entity2 {
-                en1_valid = true;
-            }
-        }
-
-        for proj in q_player_proj.iter() {
-            if proj == entity1 || proj == entity2 {
-                en2_valid = true;
-            }
-        }
-
-        if en1_valid && en2_valid {
-            commands.entity(entity1).despawn();
-            commands.entity(entity2).despawn();
-            game.active_enemies -= 1;
         }
     }
 }
