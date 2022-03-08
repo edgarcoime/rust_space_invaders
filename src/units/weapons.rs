@@ -1,8 +1,8 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, math::Vec3Swizzles, sprite::collide_aabb::collide};
 
-use crate::{WinSize, GAME_TIME_STEP};
+use crate::{WinSize, GAME_TIME_STEP, SpriteInfos, Game};
 
-use super::{Velocity, player::FromPlayer};
+use super::{Velocity, player::FromPlayer, enemy::Enemy};
 
 const DEFAULT_WEAPON_COOLDOWN: f64 = 0.3;
 
@@ -45,7 +45,9 @@ impl WeaponState {
 }
 
 #[derive(Component)]
-pub struct Projectile;
+pub struct Projectile {
+    pub velocity: Vec3
+}
 
 pub struct WeaponsPlugin;
 impl Plugin for WeaponsPlugin {
@@ -53,6 +55,7 @@ impl Plugin for WeaponsPlugin {
         app
             .add_system(manage_all_weapons_state)
             .add_system(move_player_projectiles)
+            .add_system(player_projectiles_hits_enemies)
         ;
     }
 }
@@ -75,18 +78,63 @@ pub fn manage_all_weapons_state (
 
 fn move_player_projectiles (
     mut commands: Commands,
-    mut q: Query<(Entity, &Velocity, &mut Transform), (With<Projectile>, With<FromPlayer>)>,
+    mut q: Query<(Entity, &Projectile, &mut Transform), With<FromPlayer>>,
     win_size: Res<WinSize>,
 ) {
-    for (proj_entity, vel, mut proj_tf) in q.iter_mut() {
+    for (proj_entity, proj, mut proj_tf) in q.iter_mut() {
         let translation = &mut proj_tf.translation;
         // // TODO calculate vector for diagonal projectiles 
-        translation.y += vel.0.y * GAME_TIME_STEP;
-        translation.x += vel.0.x * GAME_TIME_STEP;
+        translation.y += proj.velocity.y * GAME_TIME_STEP;
+        translation.x += proj.velocity.x * GAME_TIME_STEP;
 
         // Despawn laser if it goes beyond bounds
         if translation.y > win_size.h {
             commands.entity(proj_entity).despawn();
+        }
+    }
+}
+
+fn player_projectiles_hits_enemies(
+    mut commands: Commands,
+    mut game: ResMut<Game>,
+    projectile_q: Query<(Entity, &Transform), With<FromPlayer>>, // projectiles
+    enemy_q: Query<(Entity, &Transform), With<Enemy>>,
+    sprite_infos: Res<SpriteInfos>,
+) {
+    for (projectile_en, projectile_tf) in projectile_q.iter() {
+        let projectile_scale = projectile_tf.scale.truncate();
+        let projectile_size = sprite_infos.player_laser.1;
+
+        for (enemy_en, enemy_tf) in enemy_q.iter() {
+            let enemy_scale = enemy_tf.scale.truncate();
+            let enemy_size = sprite_infos.red_enemy.1;
+
+            let collision = collide(
+                projectile_tf.translation,
+                projectile_size * projectile_scale,
+                enemy_tf.translation,
+                enemy_size * enemy_scale
+            );
+
+            if let Some(_) = collision {
+                println!("Collision!");
+
+                println!("{}, {}", projectile_size, enemy_size);
+                println!("{}, {}", sprite_infos.red_enemy.1.x, sprite_infos.red_enemy.1.y);
+                // remove enemy
+                commands.entity(enemy_en).despawn();
+                game.active_enemies -= 1;
+
+                commands.entity(projectile_en).despawn();
+            }
+
+            // if let Some(_) = collision {
+            //     // remove enemy
+            //     commands.entity(enemy_en).despawn();
+            //     game.active_enemies -= 1;
+
+            //     commands.entity(projectile_en).despawn();
+            // }
         }
     }
 }

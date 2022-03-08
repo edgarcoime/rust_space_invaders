@@ -128,11 +128,12 @@ fn player_shooting(
                         },
                         ..Default::default()
                     })
-                    .insert(Projectile)
+                    .insert(Projectile {
+                        velocity: weapon_state.projectile_speed * Vec3::new(0.0, 0.5, 0.0).normalize()
+                    })
                     .insert(FromPlayer)
                     // Set new Velocity based on weapon state
                     // TODO: How to create different weapons?
-                    .insert(Velocity::from(Vec2::new(0., weapon_state.projectile_speed)))
                     ;
             };
             spawn_lasers(0.);
