@@ -1,11 +1,9 @@
 mod system;
-mod units;
 mod utils;
 mod diagnostics;
 
 use bevy::prelude::*;
 use diagnostics::DiagnosticsPluginGroup;
-use units::UnitsPluginGroup;
 use utils::load_image;
 
 // region:      Constants
@@ -78,7 +76,6 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugins(DiagnosticsPluginGroup)// Debug
-        .add_plugins(UnitsPluginGroup)
 
         // Insert builtins
         .add_startup_system(setup)
