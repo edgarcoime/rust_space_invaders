@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{WinSize, SpriteInfos, shared::{Health, WeaponState, MovementSpeed, Projectile}, GAME_TIME_STEP};
+use crate::{WinSize, SpriteInfos, shared::{Health, WeaponState, MovementSpeed, Projectile, Velocity}, GAME_TIME_STEP};
 
 #[derive(Component)]
 pub struct FromPlayer;
@@ -94,12 +94,14 @@ fn player_shooting(
                 .insert_bundle(SpriteBundle {
                     texture: sprite_infos.player_laser.0.clone(),
                     transform: Transform {
+                        translation: Vec3::new(x, y, 0.),
                         scale: Vec3::new(0.5, 0.5, 1.),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
                 .insert(Projectile::default())
+                .insert(Velocity::new(0., weapon_state.projectile_speed))
                 .insert(FromPlayer)
             ;
 
