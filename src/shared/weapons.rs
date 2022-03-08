@@ -1,6 +1,7 @@
 use bevy::prelude::*;
+use bevy_rapier2d::{physics::RapierConfiguration, prelude::{RigidBodyVelocity, ColliderPosition, RigidBodyVelocityComponent, ColliderPositionComponent}};
 
-use crate::{GAME_TIME_STEP, entities::FromPlayer, WinSize};
+use crate::Game;
 
 #[derive(Component)]
 pub struct Projectile {
@@ -40,7 +41,6 @@ impl Plugin for WeaponsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system(manage_all_weapons_state)
-            .add_system(move_player_projectiles)
         ;
     }
 }
@@ -60,20 +60,9 @@ fn manage_all_weapons_state (
     }
 }
 
-fn move_player_projectiles (
+fn player_projectiles_hit_enemy(
     mut commands: Commands,
-    mut q: Query<(Entity, &Projectile, &mut Transform), With<FromPlayer>>,
-    win_size: Res<WinSize>,
+    mut game: ResMut<Game>,
 ) {
-    for (entity, projectile, mut tf) in q.iter_mut() {
-        let translation = &mut tf.translation;
-        // // TODO calculate vector for diagonal projectiles 
-        translation.y += projectile.velocity.y * GAME_TIME_STEP;
-        translation.x += projectile.velocity.x * GAME_TIME_STEP;
 
-        // Despawn laser if it goes beyond bounds
-        if translation.y > win_size.h {
-            commands.entity(entity).despawn();
-        }
-    }
 }

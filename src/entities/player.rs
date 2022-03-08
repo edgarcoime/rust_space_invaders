@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 use crate::{WinSize, SpriteInfos, shared::{Health, WeaponState, MovementSpeed, Projectile}, GAME_TIME_STEP};
 
@@ -19,7 +20,7 @@ impl Plugin for PlayerPlugin {
         app
             .add_startup_stage(
                 "player_setup", 
-                SystemStage::single(player_spawn)
+                SystemStage::single(player_spawn.after("main_setup"))
             )
             .add_system(player_movement)
             .add_system(player_shooting)
@@ -83,33 +84,47 @@ fn player_shooting(
     time: Res<Time>,
     kb: Res<Input<KeyCode>>,
     sprite_infos: Res<SpriteInfos>,
+    rapier_config: ResMut<RapierConfiguration>,
 ) {
+    let scl = rapier_config.scale;
     if let Ok((player_tf, mut weapon_state)) = q.get_single_mut() {
         if weapon_state.ready && (kb.pressed(KeyCode::Space) || kb.pressed(KeyCode::Z)) {
             let x = player_tf.translation.x;
             let y = player_tf.translation.y;
+            let proposed_location = Vec2::new(x/scl, y/scl);
 
-            // TODO: REFACTOR Based on weapon queried
-            let mut spawn_lasers = |x_offset: f32| {
-                commands
-                    .spawn_bundle(SpriteBundle {
-                        texture: sprite_infos.player_laser.0.clone(),
-                        transform: Transform {
-                            translation: Vec3::new(x + x_offset, y, 0.),
-                            scale: Vec3::new(0.5, 0.5, 1.),
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    })
-                    .insert(Projectile {
-                        velocity: weapon_state.projectile_speed * Vec3::new(0.0, 0.5, 0.0).normalize()
-                    })
-                    .insert(FromPlayer)
-                    // Set new Velocity based on weapon state
-                    // TODO: How to create different weapons?
-                    ;
+            let rigid_body = RigidBodyBundle {
+                velocity: RigidBodyVelocity { 
+                    linvel: Vec2::new(0., weapon_state.projectile_speed/scl).into(), 
+                    angvel: 0.0 
+                }.into(),
+                ..Default::default()
             };
-            spawn_lasers(0.);
+            let collider = ColliderBundle {
+                collider_type: ColliderType::Sensor.into(),
+                shape: ColliderShape::cuboid(
+                    sprite_infos.player_laser.1.x / scl,
+                    sprite_infos.player_laser.1.y / scl
+                ).into(),
+                position: proposed_location.into(),
+                ..Default::default()
+            };
+            commands
+                .spawn()
+                .insert_bundle(SpriteBundle {
+                    texture: sprite_infos.player_laser.0.clone(),
+                    transform: Transform {
+                        scale: Vec3::new(0.5, 0.5, 1.),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert_bundle(rigid_body)
+                .insert_bundle(collider)
+                .insert(ColliderPositionSync::Discrete)
+                .insert(Projectile { velocity: Vec3::default() })
+                .insert(FromPlayer)
+            ;
 
             // Set weapon state
             weapon_state.fired(time.seconds_since_startup());

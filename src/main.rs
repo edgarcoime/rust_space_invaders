@@ -12,11 +12,16 @@ use diagnostics::DiagnosticsPluginGroup;
 use entities::EntitiesPluginGroup;
 use shared::SharedPluginGroup;
 use utils::load_image;
+use nalgebra::vector;
+
+use crate::entities::Enemy;
 
 // region:      Constants
 const WINDOW_WIDTH: f32 = 600.0;
 const WINDOW_HEIGHT: f32 = 600.0;
 const GAME_TIME_STEP: f32 = 1. / 60.;
+// const PHYSICS_SCALE: f32 = 50.;
+const PHYSICS_SCALE: f32 = 50.;
 // endregion:   Constants
 
 // region:      Assets
@@ -48,6 +53,7 @@ pub struct Game {
     active_enemies: i32,
 }
 
+#[derive(Debug)]
 pub struct SpriteInfos {
     player: (Handle<Image>, Vec2),
     player_laser: (Handle<Image>, Vec2),
@@ -83,14 +89,19 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+
+        // Insert builtins
+        .add_startup_system(setup.label("main_setup"))
         .add_plugins(DiagnosticsPluginGroup)// Debug
         .add_plugins(SharedPluginGroup)// Debug
         .add_plugins(EntitiesPluginGroup)
 
-        // Insert builtins
-        .add_startup_system(setup)
-
         // Plugins
+
+        // .add_startup_stage(
+        //     "testing", 
+        //     SystemStage::single(test_spawn.after("main_setup"))
+        // )
 
         .run()
 }
@@ -99,7 +110,7 @@ fn setup(
     mut commands: Commands,
     mut windows: ResMut<Windows>,
     mut images: ResMut<Assets<Image>>,
-    // asset_server: Res<AssetServer>,
+    mut rapier_config: ResMut<RapierConfiguration>,
 ) {
     let v1 = Vec2::new(12., 12.);
     let v2 = Vec2::new(12., 12.);
@@ -128,4 +139,41 @@ fn setup(
 
     // position window
     window.set_position(IVec2::new(0, 0));
+
+    // Scale is saying
+    // given 1 physics meter how many pixels?
+    rapier_config.scale = PHYSICS_SCALE;
+    rapier_config.gravity = vector![0., 0.];
+}
+
+fn test_spawn(
+    mut commands: Commands,
+    win_size: Res<WinSize>,
+    sprite_infos: Res<SpriteInfos>,
+    rapier_config: ResMut<RapierConfiguration>,
+) {
+    println!("{:?}", sprite_infos.green_enemy.1);
+
+    commands
+        .spawn()
+        .insert_bundle(SpriteBundle {
+            texture: sprite_infos.green_enemy.0.clone(),
+            transform: Transform::default(),
+            ..Default::default()
+        })
+        .insert_bundle(RigidBodyBundle {
+            body_type: RigidBodyType::KinematicVelocityBased.into(),
+            velocity: RigidBodyVelocity {
+                linvel: Vec2::new(0., 1.0).into(),
+                angvel: 0.0,
+            }.into(),
+            ..Default::default()
+        })
+        .insert(Enemy)
+        ;
+}
+
+fn testing_spawn_movement(
+) {
+
 }
