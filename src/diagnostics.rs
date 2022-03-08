@@ -1,4 +1,7 @@
-use bevy::{app::PluginGroupBuilder, diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}, prelude::PluginGroup};
+use bevy::{prelude::*, app::PluginGroupBuilder};
+use bevy_rapier2d::{prelude::{RigidBodyVelocityComponent, RigidBodyPositionComponent, ColliderPosition, ColliderPositionComponent}, physics::RapierConfiguration};
+
+use crate::entities::Enemy;
 
 pub struct DiagnosticsPluginGroup;
 impl PluginGroup for DiagnosticsPluginGroup {
@@ -18,3 +21,5 @@ impl PluginGroup for DiagnosticsPluginGroup {
             ;
     }
 }
+
+

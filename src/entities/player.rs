@@ -103,8 +103,8 @@ fn player_shooting(
             let collider = ColliderBundle {
                 collider_type: ColliderType::Sensor.into(),
                 shape: ColliderShape::cuboid(
-                    sprite_infos.player_laser.1.x / scl,
-                    sprite_infos.player_laser.1.y / scl
+                    (sprite_infos.player_laser.1.x / 2.) / scl,
+                    (sprite_infos.player_laser.1.y / 2.) / scl
                 ).into(),
                 position: proposed_location.into(),
                 ..Default::default()

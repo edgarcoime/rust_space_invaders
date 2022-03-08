@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use bevy_rapier2d::{physics::RapierConfiguration, prelude::{RigidBodyVelocity, ColliderPosition, RigidBodyVelocityComponent, ColliderPositionComponent}};
+use bevy_rapier2d::{physics::RapierConfiguration, prelude::{RigidBodyVelocity, ColliderPosition, RigidBodyVelocityComponent, ColliderPositionComponent, IntersectionEvent, ContactEvent}};
 
-use crate::Game;
+use crate::{Game, entities::{FromPlayer, Enemy}};
 
 #[derive(Component)]
 pub struct Projectile {
@@ -41,6 +41,7 @@ impl Plugin for WeaponsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system(manage_all_weapons_state)
+            .add_system(display_events)
         ;
     }
 }
@@ -60,9 +61,26 @@ fn manage_all_weapons_state (
     }
 }
 
+/* A system that displays the events. */
+fn display_events(
+    mut intersection_events: EventReader<IntersectionEvent>,
+    mut contact_events: EventReader<ContactEvent>,
+) {
+    for intersection_event in intersection_events.iter() {
+        println!("Received intersection event: {:?}", intersection_event);
+    }
+
+    for contact_event in contact_events.iter() {
+        println!("Received contact event: {:?}", contact_event);
+    }
+}
+
 fn player_projectiles_hit_enemy(
     mut commands: Commands,
     mut game: ResMut<Game>,
+    projectile_q: Query<Entity, (With<FromPlayer>, With<Projectile>)>,
+    enemy_q: Query<Entity, With<Enemy>>,
+    rapier_config: ResMut<RapierConfiguration>,
 ) {
 
 }
