@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 
+use crate::{GAME_TIME_STEP, entities::FromPlayer, WinSize};
+
 #[derive(Component)]
 pub struct Projectile {
-    pub velocity: Vec3
+    pub velocity: Vec3,
 }
 
 #[derive(Component)]
@@ -38,6 +40,7 @@ impl Plugin for WeaponsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system(manage_all_weapons_state)
+            .add_system(move_player_projectiles)
         ;
     }
 }
@@ -53,6 +56,24 @@ fn manage_all_weapons_state (
 
         if w_state.last_fired == 0. || now > last_shot + w_state.cooldown {
             w_state.reset();
+        }
+    }
+}
+
+fn move_player_projectiles (
+    mut commands: Commands,
+    mut q: Query<(Entity, &Projectile, &mut Transform), With<FromPlayer>>,
+    win_size: Res<WinSize>,
+) {
+    for (entity, projectile, mut tf) in q.iter_mut() {
+        let translation = &mut tf.translation;
+        // // TODO calculate vector for diagonal projectiles 
+        translation.y += projectile.velocity.y * GAME_TIME_STEP;
+        translation.x += projectile.velocity.x * GAME_TIME_STEP;
+
+        // Despawn laser if it goes beyond bounds
+        if translation.y > win_size.h {
+            commands.entity(entity).despawn();
         }
     }
 }

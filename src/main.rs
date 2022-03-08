@@ -10,6 +10,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use diagnostics::DiagnosticsPluginGroup;
 use entities::EntitiesPluginGroup;
+use shared::SharedPluginGroup;
 use utils::load_image;
 
 // region:      Constants
@@ -83,6 +84,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(DiagnosticsPluginGroup)// Debug
+        .add_plugins(SharedPluginGroup)// Debug
         .add_plugins(EntitiesPluginGroup)
 
         // Insert builtins

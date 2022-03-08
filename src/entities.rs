@@ -2,7 +2,8 @@ mod enemy;
 mod player;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
-use self::{player::PlayerPlugin, enemy::EnemyPlugin};
+pub use self::player::*;
+pub use self::enemy::*;
 
 pub struct EntitiesPluginGroup;
 impl PluginGroup for EntitiesPluginGroup {
