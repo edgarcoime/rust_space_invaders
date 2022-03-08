@@ -6,7 +6,7 @@ mod entities;
 mod shared;
 // endregion:   Modules
 
-use bevy::prelude::*;
+use bevy::{prelude::*, ecs::{archetype::Archetypes, component::ComponentId}};
 use bevy_rapier2d::prelude::*;
 use diagnostics::DiagnosticsPluginGroup;
 use entities::EntitiesPluginGroup;
@@ -173,7 +173,14 @@ fn test_spawn(
         ;
 }
 
-fn testing_spawn_movement(
-) {
-
+pub fn get_components_for_entity<'a>(
+    entity: &Entity,
+    archetypes: &'a Archetypes,
+) -> Option<impl Iterator<Item = ComponentId> + 'a> {
+    for archetype in archetypes.iter() {
+        if archetype.entities().contains(entity) {
+            return Some(archetype.components());
+        }
+    }
+    None
 }

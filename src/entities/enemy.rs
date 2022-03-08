@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::{physics::{RigidBodyBundle, ColliderBundle, RapierConfiguration, RigidBodyPositionSync, ColliderPositionSync}, prelude::{RigidBodyVelocity, ColliderType, ColliderShape, RigidBodyPosition, RigidBodyVelocityComponent, RigidBodyPositionComponent, ColliderPositionComponent}};
+use bevy_rapier2d::prelude::*;
 use rand::{thread_rng, Rng};
 
 use crate::{Game, WinSize, SpriteInfos};
@@ -46,10 +46,6 @@ fn enemy_spawn(
             .spawn()
             .insert_bundle(SpriteBundle {
                 texture: sprite_infos.red_enemy.0.clone(),
-                transform: Transform {
-                    translation: Vec3::new(x, y, 10.),
-                    ..Default::default()
-                },
                 ..Default::default()
             })
             .insert_bundle(RigidBodyBundle {
@@ -65,6 +61,11 @@ fn enemy_spawn(
             })
             .insert_bundle(ColliderBundle {
                 collider_type: ColliderType::Sensor.into(),
+                // flags: (ActiveEvents::CONTACT_EVENTS | ActiveEvents::INTERSECTION_EVENTS).into(),
+                flags: ColliderFlags {
+                    active_events: (ActiveEvents::CONTACT_EVENTS | ActiveEvents::INTERSECTION_EVENTS).into(),
+                    ..Default::default()
+                }.into(),
                 // position: proposed_location.into(),
                 shape: ColliderShape::cuboid(
                     (sprite_infos.red_enemy.1.x / 2.) / scl,

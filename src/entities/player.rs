@@ -94,6 +94,10 @@ fn player_shooting(
             let proposed_location = Vec2::new(x/scl, y/scl);
 
             let rigid_body = RigidBodyBundle {
+                position: RigidBodyPosition {
+                    position: proposed_location.into(),
+                    ..Default::default()
+                }.into(),
                 velocity: RigidBodyVelocity { 
                     linvel: Vec2::new(0., weapon_state.projectile_speed/scl).into(), 
                     angvel: 0.0 
@@ -101,12 +105,11 @@ fn player_shooting(
                 ..Default::default()
             };
             let collider = ColliderBundle {
-                collider_type: ColliderType::Sensor.into(),
+                collider_type: ColliderType::Solid.into(),
                 shape: ColliderShape::cuboid(
                     (sprite_infos.player_laser.1.x / 2.) / scl,
                     (sprite_infos.player_laser.1.y / 2.) / scl
                 ).into(),
-                position: proposed_location.into(),
                 ..Default::default()
             };
             commands
@@ -121,7 +124,7 @@ fn player_shooting(
                 })
                 .insert_bundle(rigid_body)
                 .insert_bundle(collider)
-                .insert(ColliderPositionSync::Discrete)
+                .insert(RigidBodyPositionSync::Discrete)
                 .insert(Projectile { velocity: Vec3::default() })
                 .insert(FromPlayer)
             ;
