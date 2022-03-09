@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use bevy::{prelude::*, sprite::collide_aabb::{Collision, collide}, reflect::List};
 use crate::{Game, entities::{FromPlayer, Enemy, Obstacle}, SpriteInfos, AssetScaling};
 use super::{Health, RenderedAssetInfo};
@@ -112,6 +114,8 @@ fn manage_projectiles_hit_obstacles (
     >,
 ) {
     // TODO: Prevent multiple despawn calls
+    // When a laser hits two obstacles at the same time
+    let mut entities_despawned: HashSet<Entity> = HashSet::new();
     for (ob_en, mut ob_health, ob_sprite, ob_tf) in obstacles_q.iter_mut() {
         for (proj_en, proj, proj_info, proj_tf) in projectiles_q.iter() {
             if let Some(ob_size) = ob_sprite.custom_size {
@@ -124,10 +128,17 @@ fn manage_projectiles_hit_obstacles (
 
                 if let Some(_) = collision {
                     ob_health.current_hp -= proj.damage;
-                    commands.entity(proj_en).despawn();
 
-                    if ob_health.current_hp <= 0 {
-                        commands.entity(ob_en).despawn();
+                    // Despawn and ensure entity is not despawned twice
+                    if (entities_despawned.get(&proj_en)).is_none() {
+                        commands.entity(proj_en).despawn();
+                        entities_despawned.insert(proj_en);
+                    }
+
+                    if  ob_health.current_hp <= 0 && 
+                        entities_despawned.get(&ob_en).is_none() {
+                            commands.entity(ob_en).despawn();
+                            entities_despawned.insert(ob_en);
                     }
                 }
             }

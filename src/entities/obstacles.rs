@@ -1,4 +1,4 @@
-use bevy::{prelude::*, ecs::bundle};
+use bevy::{prelude::*, ecs::bundle, utils::HashSet};
 
 use crate::{shared::Health, WinSize};
 
@@ -74,26 +74,21 @@ fn setup_obstacles(
             Vec2::new(x_start, y_start), 
             offset
         );
+    }
 }
 
 fn create_obstacle(commands: &mut Commands, start_position: Vec2, offset_x: f32) {
     for (row_idx, row) in OBSTACLE_SHAPE.iter().rev().enumerate() {
         for (col_idx, col) in row.chars().enumerate() {
             if col == 'x' {
-                let x = start_position.x + (col_idx as f32 * OBSTACLE_BLOCK_SIZE) + offset_x;
-                let y = start_position.y + (row_idx as f32 * OBSTACLE_BLOCK_SIZE);
+                let x = start_position.x + (col_idx as f32 * (OBSTACLE_BLOCK_SIZE)) + offset_x;
+                let y = start_position.y + (row_idx as f32 * (OBSTACLE_BLOCK_SIZE));
 
+                let color = Color::hex("F14F50").unwrap();
                 commands
-                    .spawn_bundle(BlockBundle::new(
-                        x, 
-                        y, 
-                        Color::ORANGE_RED,
-                    ));
+                    .spawn_bundle(BlockBundle::new(x, y, color));
+                    // .spawn_bundle(BlockBundle::new(x, y, Color::ORANGE_RED));
             }
         }
-    }
-}
-
-fn create_multiple_obstacles(commands: &mut Commands, start_position: Vec2, offsets: Vec<f32>) {
     }
 }
