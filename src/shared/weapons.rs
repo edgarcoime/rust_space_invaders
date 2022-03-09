@@ -25,9 +25,9 @@ impl WeaponState {
     pub fn fast_normal_weapon() -> Self {
         Self {
             ready: true,
-            cooldown: 0.2,
+            cooldown: 0.5,
             last_fired: 0.,
-            projectile_speed: 700.,
+            projectile_speed: 400.,
         }
     }
 

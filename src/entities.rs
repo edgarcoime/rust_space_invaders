@@ -14,7 +14,7 @@ impl PluginGroup for EntitiesPluginGroup {
             .add(EntitiesPlugin)
             .add(ObstaclesPlugin)
             .add(PlayerPlugin)
-            // .add(EnemyPlugin)
+            .add(EnemyPlugin)
         ;
     }
 }
