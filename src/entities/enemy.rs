@@ -1,6 +1,6 @@
 use bevy::{prelude::*, sprite};
 use rand::{thread_rng, Rng};
-use crate::{Game, WinSize, SpriteInfos, shared::{Health, RealAssetSize}, AssetScaling};
+use crate::{Game, WinSize, SpriteInfos, shared::{Health, RenderedAssetInfo}, AssetScaling};
 
 #[derive(Component)]
 pub struct FromEnemy;
@@ -38,17 +38,18 @@ fn enemy_spawn(
         let x = rng.gen_range(-w_span..w_span) as f32;
         let y = rng.gen_range(-h_span..h_span) as f32;
         let next_location = Vec3::new(x, y, 5.);
-        let asset_size = RealAssetSize::new (
+        let asset_size = Vec2::new (
                 1. * asset.1.x,
                 1. * asset.1.y,
         );
+        let asset_info = RenderedAssetInfo::new(asset_size);
 
         // spawn enemy
         commands
             .spawn()
             .insert_bundle(SpriteBundle {
                 sprite: Sprite {
-                    custom_size: Some(Vec2::new(asset_size.width, asset_size.height)),
+                    custom_size: Some(asset_size),
                     ..Default::default()
                 },
                 texture: asset.0,
@@ -58,7 +59,7 @@ fn enemy_spawn(
                 },
                 ..Default::default()
             })
-            .insert(asset_size)
+            .insert(asset_info)
             .insert(Health::default())
             // .insert(Health::from(2))
             .insert(Enemy);

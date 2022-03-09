@@ -47,6 +47,20 @@ pub struct Game {
     active_enemies: i32,
 }
 
+
+pub struct WinSize {
+    w: f32,
+    h: f32,
+}
+impl Default for WinSize {
+    fn default() -> Self {
+        Self {
+            w: WINDOW_WIDTH,
+            h: WINDOW_HEIGHT,
+        }
+    }
+}
+
 pub struct AssetScaling {
     player_projectile: Vec3,
     enemy_projectile: Vec3,
@@ -68,11 +82,6 @@ pub struct SpriteInfos {
     green_enemy: (Handle<Image>, Vec2),
     yellow_enemy: (Handle<Image>, Vec2),
 }
-
-pub struct WinSize {
-    w: f32,
-    h: f32,
-}
 // endregion:   Resources
 
 // region:      Components
@@ -86,6 +95,7 @@ fn main() {
         // Initial setup
         .add_state(GameState::InGame)
         .init_resource::<Game>()
+        .init_resource::<WinSize>()
         .init_resource::<AssetScaling>()
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .insert_resource(WindowDescriptor {
@@ -95,19 +105,11 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
-
         // Insert builtins
         .add_startup_system(setup.label("main_setup"))
         .add_plugins(DiagnosticsPluginGroup)// Debug
         .add_plugins(SharedPluginGroup)// Debug
         .add_plugins(EntitiesPluginGroup)
-
-        // Plugins
-
-        // .add_startup_stage(
-        //     "testing", 
-        //     SystemStage::single(test_spawn.after("main_setup"))
-        // )
 
         .run()
 }
@@ -137,10 +139,10 @@ fn setup(
         yellow_enemy: load_image(&mut images, SPRITE_DIR, YELLOW_ENEMY_SPRITE),
         player_laser: load_image(&mut images, SPRITE_DIR, PLAYER_LASER_SPRITE),
     });
-    commands.insert_resource(WinSize {
-        w: window.width(),
-        h: window.height(),
-    });
+    // commands.insert_resource(WinSize {
+    //     w: window.width(),
+    //     h: window.height(),
+    // });
 
     // position window
     window.set_position(IVec2::new(0, 0));

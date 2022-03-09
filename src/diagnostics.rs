@@ -7,7 +7,7 @@ impl PluginGroup for DiagnosticsPluginGroup {
             // Adds frame time diagnostics
             .add(FrameTimeDiagnosticsPlugin::default())
             // Adds a system that prints diagnostics to the console
-            .add(LogDiagnosticsPlugin::default())
+            // .add(LogDiagnosticsPlugin::default())
             // Any plugin can register diagnostics
             // Uncomment this to add some render resource diagnostics:
             // .add_plugin(bevy::wgpu::diagnostic::WgpuResourceDiagnosticsPlugin::default())

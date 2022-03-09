@@ -8,17 +8,12 @@ pub use self::attributes::*;
 pub use self::physics::*;
 
 #[derive(Component)]
-pub struct RealAssetSize {
-    pub width: f32,
-    pub height: f32,
+pub struct RenderedAssetInfo {
+    pub size: Vec2,
 }
-impl RealAssetSize {
-    pub fn new(width: f32, height: f32) -> Self {
-        Self { width, height }
-    }
-
-    pub fn to_vec2(&self) -> Vec2 {
-        Vec2::new(self.width, self.height)
+impl RenderedAssetInfo {
+    pub fn new(size: Vec2) -> Self {
+        Self { size }
     }
 }
 

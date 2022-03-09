@@ -1,6 +1,6 @@
 use bevy::{prelude::*, sprite::collide_aabb::{Collision, collide}};
 use crate::{Game, entities::{FromPlayer, Enemy}, SpriteInfos, AssetScaling};
-use super::{Health, RealAssetSize};
+use super::{Health, RenderedAssetInfo};
 
 #[derive(Component)]
 pub struct Projectile {
@@ -70,21 +70,19 @@ fn manage_player_projectiles_hit (
     mut commands: Commands,
     mut game: ResMut<Game>,
     projectile_q: Query<
-        (Entity, &Projectile, &RealAssetSize, &Transform), 
+        (Entity, &Projectile, &RenderedAssetInfo, &Transform), 
         (With<FromPlayer>, With<Projectile>)
     >, // projectiles
-    mut enemy_q: Query<(Entity, &mut Health, &RealAssetSize, &Transform), With<Enemy>>,
-    sprite_infos: Res<SpriteInfos>,
+    mut enemy_q: Query<(Entity, &mut Health, &RenderedAssetInfo, &Transform), With<Enemy>>,
 ) {
-    for (proj_en, proj, proj_size, proj_tf) in projectile_q.iter() {
-        
-        for (ene_en, mut ene_health, ene_size, ene_tf) in enemy_q.iter_mut() {
+    for (proj_en, proj, proj_asset_info, proj_tf) in projectile_q.iter() {
+        for (ene_en, mut ene_health, enemy_asset_info, ene_tf) in enemy_q.iter_mut() {
 
             let collision = collide(
                 proj_tf.translation,
-                proj_size.to_vec2(),
+                proj_asset_info.size,
                 ene_tf.translation,
-                ene_size.to_vec2(),
+                enemy_asset_info.size,
             );
 
             if let Some(_) = collision {
