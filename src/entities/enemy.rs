@@ -62,10 +62,14 @@ pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_system(setup_enemies) // Change to spawn per level?
+            .add_startup_system_to_stage(
+                StartupStage::PostStartup,
+                setup_enemies
+            );
+            
+            // Change to spawn per level?
             // .add_system(enemy_spawn) // Change to spawn per level?
             // .add_system(log_enemy_rigid_and_collider)
-        ;
     }
 }
 
@@ -75,67 +79,26 @@ fn setup_enemies(
     win_size: Res<WinSize>,
     sprite_infos: Res<SpriteInfos>
 ) {
-    if game.active_enemies < 2 {
-        let mut rng = thread_rng();
-        let w_span = win_size.w / 2. - 100.;
-        let h_span = win_size.h / 2. - 100.;
-        let x = rng.gen_range(-w_span..w_span) as f32;
-        let y = rng.gen_range(-h_span..h_span) as f32;
+    let top_left = Vec2::new(
+        -win_size.w / 2.,
+        win_size.h / 2.
+    );
+    let alien_rows = 6;
+    let alien_cols = 8;
+    let x_distance: f32 = 60.;
+    let y_distance: f32 = 48.;
+    let x_offset: f32 = -210.;
+    let y_offset: f32 = -50.;
 
-        commands.spawn_bundle(AlienBundle::new(
-            x, 
-            y, 
-            AlienType::YELLOW, 
-            &sprite_infos)
-        );
 
-        game.active_enemies += 1;
-    }
-}
-
-fn enemy_spawn(
-    mut commands: Commands,
-    mut game: ResMut<Game>,
-    win_size: Res<WinSize>,
-    sprite_infos: Res<SpriteInfos>,
-) {
-    if game.active_enemies < 2 {
-        let asset = sprite_infos.red_enemy.clone();
-
-        // TODO: get random position?
-        // compute the rando position
-        let mut rng = thread_rng();
-        let w_span = win_size.w / 2. - 100.;
-        let h_span = win_size.h / 2. - 100.;
-        let x = rng.gen_range(-w_span..w_span) as f32;
-        let y = rng.gen_range(-h_span..h_span) as f32;
-        let next_location = Vec3::new(x, y, 5.);
-        let asset_size = Vec2::new (
-                1. * asset.1.x,
-                1. * asset.1.y,
-        );
-        let asset_info = RenderedAssetInfo::new(asset_size);
-
-        // spawn enemy
-        commands
-            .spawn()
-            .insert_bundle(SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(asset_size),
-                    ..Default::default()
-                },
-                texture: asset.0,
-                transform: Transform {
-                    translation: next_location,
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
-            .insert(asset_info)
-            .insert(Health::default())
-            // .insert(Health::from(2))
-            .insert(Enemy);
-
-        game.active_enemies += 1;
+    for (row_idx, _) in (0..alien_rows).enumerate() {
+        for (col_idx, _) in (0..alien_cols).enumerate() {
+            let x = col_idx as f32 * x_distance + x_offset;
+            let y = row_idx as f32 * y_distance + y_offset;
+        
+            commands.spawn_bundle(AlienBundle::new(
+                x, y, AlienType::YELLOW, &sprite_infos)
+            );
+        }
     }
 }
