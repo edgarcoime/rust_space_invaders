@@ -18,6 +18,14 @@ impl Default for Health {
         }
     }
 }
+impl Health {
+    pub fn from(hp: u32) -> Self {
+        Self {
+            original_hp: hp,
+            current_hp: hp,
+        }
+    }
+}
 
 pub struct AttributesPlugin;
 impl Plugin for AttributesPlugin {

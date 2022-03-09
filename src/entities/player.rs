@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{WinSize, SpriteInfos, shared::{Health, WeaponState, MovementSpeed, Projectile, Velocity}, GAME_TIME_STEP};
+use crate::{WinSize, SpriteInfos, shared::{Health, WeaponState, MovementSpeed, Projectile, Velocity, RealAssetSize}, GAME_TIME_STEP, AssetScaling};
 
 #[derive(Component)]
 pub struct FromPlayer;
@@ -83,25 +83,35 @@ fn player_shooting(
     time: Res<Time>,
     kb: Res<Input<KeyCode>>,
     sprite_infos: Res<SpriteInfos>,
+    asset_scaling: Res<AssetScaling>,
 ) {
     if let Ok((player_tf, mut weapon_state)) = q.get_single_mut() {
         if weapon_state.ready && (kb.pressed(KeyCode::Space) || kb.pressed(KeyCode::Z)) {
             let x = player_tf.translation.x;
             let y = player_tf.translation.y;
+            let asset_size = RealAssetSize::new(
+                asset_scaling.player_projectile.x * sprite_infos.player_laser.1.x,
+                asset_scaling.player_projectile.y * sprite_infos.player_laser.1.y,
+            );
 
             commands
                 .spawn()
                 .insert_bundle(SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(asset_size.width, asset_size.height)),
+                        ..Default::default()
+                    },
                     texture: sprite_infos.player_laser.0.clone(),
                     transform: Transform {
                         translation: Vec3::new(x, y, 0.),
-                        scale: Vec3::new(0.5, 0.5, 1.),
                         ..Default::default()
                     },
                     ..Default::default()
                 })
+                .insert(asset_size)
                 .insert(Projectile::default())
                 .insert(Velocity::new(0., weapon_state.projectile_speed))
+                // .insert(Velocity::new(0., 150.))
                 .insert(FromPlayer)
             ;
 

@@ -1,5 +1,6 @@
-use bevy::prelude::*;
-use crate::{Game, entities::{FromPlayer, Enemy}};
+use bevy::{prelude::*, sprite::collide_aabb::{Collision, collide}};
+use crate::{Game, entities::{FromPlayer, Enemy}, SpriteInfos, AssetScaling};
+use super::{Health, RealAssetSize};
 
 #[derive(Component)]
 pub struct Projectile {
@@ -44,6 +45,7 @@ impl Plugin for WeaponsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system(manage_all_weapons_state)
+            .add_system(manage_player_projectiles_hit)
             // .add_system(display_events)
         ;
     }
@@ -60,6 +62,41 @@ fn manage_all_weapons_state (
 
         if w_state.last_fired == 0. || now > last_shot + w_state.cooldown {
             w_state.reset();
+        }
+    }
+}
+
+fn manage_player_projectiles_hit (
+    mut commands: Commands,
+    mut game: ResMut<Game>,
+    projectile_q: Query<
+        (Entity, &Projectile, &RealAssetSize, &Transform), 
+        (With<FromPlayer>, With<Projectile>)
+    >, // projectiles
+    mut enemy_q: Query<(Entity, &mut Health, &RealAssetSize, &Transform), With<Enemy>>,
+    sprite_infos: Res<SpriteInfos>,
+) {
+    for (proj_en, proj, proj_size, proj_tf) in projectile_q.iter() {
+        
+        for (ene_en, mut ene_health, ene_size, ene_tf) in enemy_q.iter_mut() {
+
+            let collision = collide(
+                proj_tf.translation,
+                proj_size.to_vec2(),
+                ene_tf.translation,
+                ene_size.to_vec2(),
+            );
+
+            if let Some(_) = collision {
+                ene_health.current_hp -= proj.damage;
+                println!("{}", ene_health.current_hp);
+                commands.entity(proj_en).despawn();
+
+                if ene_health.current_hp <= 0 {
+                    commands.entity(ene_en).despawn();
+                    game.active_enemies -= 1;
+                }
+            }
         }
     }
 }

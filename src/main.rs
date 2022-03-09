@@ -47,6 +47,19 @@ pub struct Game {
     active_enemies: i32,
 }
 
+pub struct AssetScaling {
+    player_projectile: Vec3,
+    enemy_projectile: Vec3,
+}
+impl Default for AssetScaling {
+    fn default() -> Self {
+        Self {
+            player_projectile: Vec3::new(0.5, 0.5, 1.),
+            enemy_projectile: Vec3::new(0.5, 0.5, 1.),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct SpriteInfos {
     player: (Handle<Image>, Vec2),
@@ -73,7 +86,7 @@ fn main() {
         // Initial setup
         .add_state(GameState::InGame)
         .init_resource::<Game>()
-
+        .init_resource::<AssetScaling>()
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .insert_resource(WindowDescriptor {
             title: "".to_string(),
