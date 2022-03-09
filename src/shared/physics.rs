@@ -6,7 +6,7 @@ use super::Projectile;
 
 #[derive(Component)]
 pub struct Velocity {
-    value: Vec2,
+    pub value: Vec2,
 }
 impl Velocity {
     pub fn new(x: f32, y: f32) -> Self {

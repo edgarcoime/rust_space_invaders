@@ -1,6 +1,6 @@
-use bevy::{prelude::*, sprite};
+use bevy::{prelude::*, sprite, ecs::system::Command};
 use rand::{thread_rng, Rng};
-use crate::{Game, WinSize, SpriteInfos, shared::{Health, RenderedAssetInfo, WeaponState}, AssetScaling};
+use crate::{Game, WinSize, SpriteInfos, shared::{Health, RenderedAssetInfo, WeaponState, Velocity, MovementSpeed}, AssetScaling, GAME_TIME_STEP};
 
 enum AlienType {
     RED,
@@ -57,6 +57,12 @@ impl AlienBundle {
     }
 }
 
+pub struct AlienState {
+    movement_direction: f32,
+    movement_speed: MovementSpeed,
+    move_down: bool,
+}
+
 
 pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
@@ -65,24 +71,28 @@ impl Plugin for EnemyPlugin {
             .add_startup_system_to_stage(
                 StartupStage::PostStartup,
                 setup_enemies
-            );
-            
-            // Change to spawn per level?
-            // .add_system(enemy_spawn) // Change to spawn per level?
-            // .add_system(log_enemy_rigid_and_collider)
+            )
+            .add_system_set(
+                SystemSet::new()
+                    .with_system(manage_alien_movement_direction)
+                    .with_system(manage_alien_horizontal_movement)
+                    .with_system(manage_alien_vertical_movement)
+            )
+            ;
     }
 }
 
 fn setup_enemies(
     mut commands: Commands,
-    mut game: ResMut<Game>,
-    win_size: Res<WinSize>,
     sprite_infos: Res<SpriteInfos>
 ) {
-    let top_left = Vec2::new(
-        -win_size.w / 2.,
-        win_size.h / 2.
-    );
+    // setup resources
+    commands.insert_resource(AlienState {
+        movement_direction: -1.,
+        movement_speed: MovementSpeed { value: 30. },
+        move_down: false,
+    });
+
     let alien_rows = 6;
     let alien_cols = 8;
     let x_distance: f32 = 60.;
@@ -105,6 +115,45 @@ fn setup_enemies(
             commands.spawn_bundle(AlienBundle::new(
                 x, y, alien_type, &sprite_infos)
             );
+        }
+    }
+}
+
+fn manage_alien_horizontal_movement(
+    mut q: Query<&mut Transform, With<Enemy>>,
+    mut alien_state: ResMut<AlienState>
+) {
+    for mut tf in q.iter_mut() {
+        tf.translation.x += 
+            alien_state.movement_direction * 
+            alien_state.movement_speed.value * 
+            GAME_TIME_STEP;
+    }
+}
+
+fn manage_alien_vertical_movement(
+    mut q: Query<&mut Transform, With<Enemy>>,
+    mut alien_state: ResMut<AlienState>
+) {
+    if alien_state.move_down {
+        for mut tf in q.iter_mut() {
+            tf.translation.y += -10.;
+        }
+        alien_state.move_down = false;
+    }
+}
+
+fn manage_alien_movement_direction(
+    mut q: Query<&mut Transform, With<Enemy>>,
+    mut alien_state: ResMut<AlienState>,
+    win_size: Res<WinSize>,
+) {
+    for tf in q.iter_mut() {
+        let curr_x = tf.translation.x;
+        if curr_x.abs() >= win_size.w / 2. {
+            alien_state.movement_direction *= -1.;
+            alien_state.move_down = true;
+            break;
         }
     }
 }
