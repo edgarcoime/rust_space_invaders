@@ -47,7 +47,7 @@ impl Plugin for WeaponsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system(manage_all_weapons_state)
-            .add_system(manage_player_projectiles_hit)
+            .add_system(manage_player_projectiles_hit_enemies)
             .add_system(manage_projectiles_hit_obstacles)
             // .add_system(display_events)
         ;
@@ -69,7 +69,7 @@ fn manage_all_weapons_state (
     }
 }
 
-fn manage_player_projectiles_hit (
+fn manage_player_projectiles_hit_enemies (
     mut commands: Commands,
     mut game: ResMut<Game>,
     projectile_q: Query<
@@ -78,6 +78,7 @@ fn manage_player_projectiles_hit (
     >, // projectiles
     mut enemy_q: Query<(Entity, &mut Health, &RenderedAssetInfo, &Transform), With<Enemy>>,
 ) {
+    let mut entities_despawned: HashSet<Entity> = HashSet::new();
     for (proj_en, proj, proj_asset_info, proj_tf) in projectile_q.iter() {
         for (ene_en, mut ene_health, enemy_asset_info, ene_tf) in enemy_q.iter_mut() {
 
@@ -93,9 +94,10 @@ fn manage_player_projectiles_hit (
                 println!("{}", ene_health.current_hp);
                 commands.entity(proj_en).despawn();
 
-                if ene_health.current_hp <= 0 {
-                    commands.entity(ene_en).despawn();
-                    game.active_enemies -= 1;
+                if  ene_health.current_hp <= 0 && 
+                    entities_despawned.get(&ene_en).is_none() {
+                        commands.entity(ene_en).despawn();
+                        game.active_enemies -= 1;
                 }
             }
         }

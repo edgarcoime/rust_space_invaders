@@ -61,8 +61,8 @@ pub struct AlienState {
     movement_direction: f32,
     movement_speed: MovementSpeed,
     move_down: bool,
+    available_to_shoot: u32,
 }
-
 
 pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
@@ -91,6 +91,7 @@ fn setup_enemies(
         movement_direction: -1.,
         movement_speed: MovementSpeed { value: 30. },
         move_down: false,
+        available_to_shoot: 5,
     });
 
     let alien_rows = 6;
@@ -119,6 +120,17 @@ fn setup_enemies(
     }
 }
 
+pub fn enemy_random_shoot(
+    mut commands: Commands,
+    mut q: Query<(&mut WeaponState, &Transform), With<Enemy>>,
+    mut alien_state: ResMut<AlienState>,
+    time: Res<Time>,
+    sprite_infos: Res<SpriteInfos>,
+    asset_scaling: Res<AssetScaling>,
+) {
+
+}
+
 fn manage_alien_horizontal_movement(
     mut q: Query<&mut Transform, With<Enemy>>,
     mut alien_state: ResMut<AlienState>
@@ -144,13 +156,13 @@ fn manage_alien_vertical_movement(
 }
 
 fn manage_alien_movement_direction(
-    mut q: Query<&mut Transform, With<Enemy>>,
+    mut q: Query<(&mut Transform, &RenderedAssetInfo), With<Enemy>>,
     mut alien_state: ResMut<AlienState>,
     win_size: Res<WinSize>,
 ) {
-    for tf in q.iter_mut() {
+    for (tf, info) in q.iter_mut() {
         let curr_x = tf.translation.x;
-        if curr_x.abs() >= win_size.w / 2. {
+        if curr_x.abs() >= (win_size.w / 2.) - (info.size.x / 2.) {
             alien_state.movement_direction *= -1.;
             alien_state.move_down = true;
             break;
