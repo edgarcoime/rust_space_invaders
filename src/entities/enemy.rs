@@ -91,13 +91,19 @@ fn setup_enemies(
     let y_offset: f32 = -50.;
 
 
-    for (row_idx, _) in (0..alien_rows).enumerate() {
+    for (row_idx, row) in (0..alien_rows).rev().enumerate() {
         for (col_idx, _) in (0..alien_cols).enumerate() {
             let x = col_idx as f32 * x_distance + x_offset;
             let y = row_idx as f32 * y_distance + y_offset;
+
+            let alien_type = match row {
+                0 => AlienType::YELLOW,
+                a if a >= 1 && a <= 2 => AlienType::GREEN,
+                _ => AlienType::RED,
+            };
         
             commands.spawn_bundle(AlienBundle::new(
-                x, y, AlienType::YELLOW, &sprite_infos)
+                x, y, alien_type, &sprite_infos)
             );
         }
     }
