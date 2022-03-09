@@ -1,7 +1,6 @@
 use std::path::Path;
 use bevy::{prelude::*, render::texture::ImageType};
 
-
 pub fn load_image(images: &mut ResMut<Assets<Image>>, dir: &str, filename: &str) -> (Handle<Image>, Vec2) {
 	let path = Path::new(dir).join(filename);
 	let bytes = std::fs::read(&path).expect(&format!("Cannot find {}", path.display()));

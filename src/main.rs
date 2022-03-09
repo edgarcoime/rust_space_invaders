@@ -1,11 +1,15 @@
+// region:      Modules
 mod system;
-mod units;
 mod utils;
 mod diagnostics;
+mod entities;
+mod shared;
+// endregion:   Modules
 
-use bevy::prelude::*;
+use bevy::{prelude::*};
 use diagnostics::DiagnosticsPluginGroup;
-use units::UnitsPluginGroup;
+use entities::EntitiesPluginGroup;
+use shared::SharedPluginGroup;
 use utils::load_image;
 
 // region:      Constants
@@ -43,17 +47,40 @@ pub struct Game {
     active_enemies: i32,
 }
 
+
+pub struct WinSize {
+    w: f32,
+    h: f32,
+}
+impl Default for WinSize {
+    fn default() -> Self {
+        Self {
+            w: WINDOW_WIDTH,
+            h: WINDOW_HEIGHT,
+        }
+    }
+}
+
+pub struct AssetScaling {
+    player_projectile: Vec3,
+    enemy_projectile: Vec3,
+}
+impl Default for AssetScaling {
+    fn default() -> Self {
+        Self {
+            player_projectile: Vec3::new(0.5, 0.5, 1.),
+            enemy_projectile: Vec3::new(0.5, 0.5, 1.),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct SpriteInfos {
     player: (Handle<Image>, Vec2),
     player_laser: (Handle<Image>, Vec2),
     red_enemy: (Handle<Image>, Vec2),
     green_enemy: (Handle<Image>, Vec2),
     yellow_enemy: (Handle<Image>, Vec2),
-}
-
-pub struct WinSize {
-    w: f32,
-    h: f32,
 }
 // endregion:   Resources
 
@@ -68,7 +95,8 @@ fn main() {
         // Initial setup
         .add_state(GameState::InGame)
         .init_resource::<Game>()
-
+        .init_resource::<WinSize>()
+        .init_resource::<AssetScaling>()
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .insert_resource(WindowDescriptor {
             title: "".to_string(),
@@ -77,13 +105,11 @@ fn main() {
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
-        .add_plugins(DiagnosticsPluginGroup)// Debug
-        .add_plugins(UnitsPluginGroup)
-
         // Insert builtins
-        .add_startup_system(setup)
-
-        // Plugins
+        .add_startup_system(setup.label("main_setup"))
+        .add_plugins(DiagnosticsPluginGroup)// Debug
+        .add_plugins(SharedPluginGroup)// Debug
+        .add_plugins(EntitiesPluginGroup)
 
         .run()
 }
@@ -92,7 +118,6 @@ fn setup(
     mut commands: Commands,
     mut windows: ResMut<Windows>,
     mut images: ResMut<Assets<Image>>,
-    asset_server: Res<AssetServer>,
 ) {
     let v1 = Vec2::new(12., 12.);
     let v2 = Vec2::new(12., 12.);
@@ -114,10 +139,10 @@ fn setup(
         yellow_enemy: load_image(&mut images, SPRITE_DIR, YELLOW_ENEMY_SPRITE),
         player_laser: load_image(&mut images, SPRITE_DIR, PLAYER_LASER_SPRITE),
     });
-    commands.insert_resource(WinSize {
-        w: window.width(),
-        h: window.height(),
-    });
+    // commands.insert_resource(WinSize {
+    //     w: window.width(),
+    //     h: window.height(),
+    // });
 
     // position window
     window.set_position(IVec2::new(0, 0));
