@@ -1,5 +1,5 @@
-use bevy::{prelude::*, sprite::collide_aabb::{Collision, collide}};
-use crate::{Game, entities::{FromPlayer, Enemy}, SpriteInfos, AssetScaling};
+use bevy::{prelude::*, sprite::collide_aabb::{Collision, collide}, reflect::List};
+use crate::{Game, entities::{FromPlayer, Enemy, Obstacle}, SpriteInfos, AssetScaling};
 use super::{Health, RenderedAssetInfo};
 
 #[derive(Component)]
@@ -46,6 +46,7 @@ impl Plugin for WeaponsPlugin {
         app
             .add_system(manage_all_weapons_state)
             .add_system(manage_player_projectiles_hit)
+            .add_system(manage_projectiles_hit_obstacles)
             // .add_system(display_events)
         ;
     }
@@ -93,6 +94,41 @@ fn manage_player_projectiles_hit (
                 if ene_health.current_hp <= 0 {
                     commands.entity(ene_en).despawn();
                     game.active_enemies -= 1;
+                }
+            }
+        }
+    }
+}
+
+fn manage_projectiles_hit_obstacles (
+    mut commands: Commands,
+    mut obstacles_q: Query<
+        (Entity, &mut Health, &Sprite, &Transform),
+        With<Obstacle>,
+    >,
+    projectiles_q: Query<
+        (Entity, &Projectile, &RenderedAssetInfo, &Transform),
+        With<Projectile>,
+    >,
+) {
+    // TODO: Prevent multiple despawn calls
+    for (ob_en, mut ob_health, ob_sprite, ob_tf) in obstacles_q.iter_mut() {
+        for (proj_en, proj, proj_info, proj_tf) in projectiles_q.iter() {
+            if let Some(ob_size) = ob_sprite.custom_size {
+                let collision = collide(
+                    proj_tf.translation,
+                    proj_info.size,
+                    ob_tf.translation,
+                    ob_size
+                );
+
+                if let Some(_) = collision {
+                    ob_health.current_hp -= proj.damage;
+                    commands.entity(proj_en).despawn();
+
+                    if ob_health.current_hp <= 0 {
+                        commands.entity(ob_en).despawn();
+                    }
                 }
             }
         }

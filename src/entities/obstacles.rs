@@ -68,10 +68,12 @@ fn setup_obstacles(
         .collect::<Vec<f32>>();
         
     println!("{:?}", obstacle_x_offsets);
-    create_multiple_obstacles(
-        &mut commands, 
-        Vec2::new(x_start, y_start), 
-        obstacle_x_offsets);
+    for offset in obstacle_x_offsets {
+        create_obstacle(
+            &mut commands, 
+            Vec2::new(x_start, y_start), 
+            offset
+        );
 }
 
 fn create_obstacle(commands: &mut Commands, start_position: Vec2, offset_x: f32) {
@@ -85,15 +87,13 @@ fn create_obstacle(commands: &mut Commands, start_position: Vec2, offset_x: f32)
                     .spawn_bundle(BlockBundle::new(
                         x, 
                         y, 
-                        Color::rgb(0.25, 0.25, 0.75))
-                    );
+                        Color::ORANGE_RED,
+                    ));
             }
         }
     }
 }
 
 fn create_multiple_obstacles(commands: &mut Commands, start_position: Vec2, offsets: Vec<f32>) {
-    for offset in offsets {
-        create_obstacle(commands, start_position, offset)
     }
 }
