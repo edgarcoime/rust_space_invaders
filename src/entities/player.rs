@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use heron::prelude::*;
 
-use crate::{WinSize, SpriteInfos, shared::WeaponState, utils::RenderedAssetInfo};
+use crate::{WinSize, SpriteInfos, shared::{WeaponState, MovementSpeed}, utils::RenderedAssetInfo, GAME_TIME_STEP};
 
 // region:      Components
 #[derive(Component)]
@@ -22,6 +22,7 @@ struct PlayerBundle {
     _p: Player,
     _ps: PlayerState,
     _ws: WeaponState,
+    _ms: MovementSpeed,
     _rai: RenderedAssetInfo,
     _rb: RigidBody,
     _cs: CollisionShape,
@@ -44,8 +45,9 @@ impl PlayerBundle {
             _p: Player,
             _ps: PlayerState { name: "Player 1".to_string() },
             _ws: WeaponState::fast_normal_weapon(),
+            _ms: MovementSpeed::default(),
             _rai: asset_info,
-            _rb: RigidBody::Dynamic,
+            _rb: RigidBody::KinematicPositionBased,
             _cs: CollisionShape::Cuboid {
                 half_extends: asset_size.extend(0.) / 2.,
                 border_radius: None,
@@ -63,6 +65,7 @@ impl Plugin for PlayerPlugin {
                 StartupStage::PostStartup, 
                 setup_player
             )
+            .add_system(player_movement)
         ;
     }
 }
@@ -79,3 +82,31 @@ fn setup_player(
         .insert_bundle(PlayerBundle::new(0., bottom + 75. / 3., &sprite_infos))
     ;
 }
+
+fn player_movement(
+    mut q: Query<(&MovementSpeed, &mut Transform), With<Player>>,
+    time: Res<Time>,
+    kb_in: Res<Input<KeyCode>>,
+    win_size: Res<WinSize>,
+    sprite_infos: Res<SpriteInfos>,
+) {
+    if let Ok((mov_spd, mut tf)) = q.get_single_mut() {
+        // TODO: QUERY WILL TRY TO MATCH ALL OF DESIRED
+        // SO WILL NOT WORK IF YOUR DESIRED DOES NOT IMPLEMENT BOTH COMPONENTS
+        let player_dimensions = sprite_infos.player.1;
+        let player_sprite_x = player_dimensions.x;
+        let target_bounds_x = win_size.w/2. - player_sprite_x/2.;
+        if kb_in.pressed(KeyCode::Left) || kb_in.pressed(KeyCode::A) {
+            let desired_x = tf.translation.x + (-1. * mov_spd.value * GAME_TIME_STEP);
+            if desired_x > -target_bounds_x {
+                tf.translation.x = desired_x
+            }
+        } else if kb_in.pressed(KeyCode::Right) || kb_in.pressed(KeyCode::D) {
+            let desired_x = tf.translation.x + (1. * mov_spd.value * GAME_TIME_STEP);
+            if desired_x < target_bounds_x {
+                tf.translation.x = desired_x
+            }
+        };
+    }
+}
+

@@ -1,8 +1,15 @@
 use bevy::prelude::*;
 
+pub const DEFAULT_MOVEMENT_SPEED: f32 = 125.;
+
 #[derive(Component)]
 pub struct MovementSpeed {
     pub value: f32,
+}
+impl Default for MovementSpeed {
+    fn default() -> Self {
+        Self { value: DEFAULT_MOVEMENT_SPEED }
+    }
 }
 
 #[derive(Component)]
