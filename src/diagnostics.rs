@@ -1,11 +1,11 @@
-use bevy::{prelude::*, app::PluginGroupBuilder, diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}};
+use bevy::{app::PluginGroupBuilder, diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}, prelude::PluginGroup};
 
 pub struct DiagnosticsPluginGroup;
 impl PluginGroup for DiagnosticsPluginGroup {
     fn build(&mut self, group: &mut PluginGroupBuilder) {
         group
             // Adds frame time diagnostics
-            .add(FrameTimeDiagnosticsPlugin::default())
+            // .add(FrameTimeDiagnosticsPlugin::default())
             // Adds a system that prints diagnostics to the console
             // .add(LogDiagnosticsPlugin::default())
             // Any plugin can register diagnostics
@@ -18,5 +18,3 @@ impl PluginGroup for DiagnosticsPluginGroup {
             ;
     }
 }
-
-

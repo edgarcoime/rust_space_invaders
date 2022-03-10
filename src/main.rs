@@ -5,11 +5,11 @@ mod diagnostics;
 mod entities;
 mod shared;
 // endregion:   Modules
-
-use bevy::{prelude::*};
+// region:      Modules
+use bevy::prelude::*;
+use heron::prelude::*;
 use diagnostics::DiagnosticsPluginGroup;
 use entities::EntitiesPluginGroup;
-use shared::SharedPluginGroup;
 use utils::load_image;
 
 // region:      Constants
@@ -27,6 +27,7 @@ const PLAYER_SPRITE: &str = "player.png";
 const RED_ENEMY_SPRITE: &str = "red.png";
 const GREEN_ENEMY_SPRITE: &str = "green.png";
 const YELLOW_ENEMY_SPRITE: &str = "yellow.png";
+const TOP_EXTRA_ENEMY_SPRITE: &str = "extra.png";
 
 const PLAYER_LASER_SPRITE: &str = "laser_a_01.png";
 const ENEMY_LASER_SPRITE: &str = "laser_b_01.png";
@@ -48,18 +49,12 @@ pub struct Game {
     active_enemies: i32,
 }
 
-
-pub struct WinSize {
-    w: f32,
-    h: f32,
-}
-impl Default for WinSize {
-    fn default() -> Self {
-        Self {
-            w: WINDOW_WIDTH,
-            h: WINDOW_HEIGHT,
-        }
-    }
+pub struct SpriteInfos {
+    player: (Handle<Image>, Vec2),
+    player_laser: (Handle<Image>, Vec2),
+    red_enemy: (Handle<Image>, Vec2),
+    green_enemy: (Handle<Image>, Vec2),
+    yellow_enemy: (Handle<Image>, Vec2),
 }
 
 pub struct AssetScaling {
@@ -75,22 +70,19 @@ impl Default for AssetScaling {
     }
 }
 
-#[derive(Debug)]
-pub struct SpriteInfos {
-    player: (Handle<Image>, Vec2),
-    player_laser: (Handle<Image>, Vec2),
-    red_enemy: (Handle<Image>, Vec2),
-    green_enemy: (Handle<Image>, Vec2),
-    yellow_enemy: (Handle<Image>, Vec2),
-    alien_laser: (Handle<Image>, Vec2),
+pub struct WinSize {
+    w: f32,
+    h: f32,
+}
+impl Default for WinSize {
+    fn default() -> Self {
+        Self {
+            w: WINDOW_WIDTH,
+            h: WINDOW_HEIGHT,
+        }
+    }
 }
 // endregion:   Resources
-
-// region:      Components
-// endregion:   Components
-
-// region:      Entities
-// endregion:   Entities
 
 fn main() {
     App::new()
@@ -101,17 +93,22 @@ fn main() {
         .init_resource::<AssetScaling>()
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .insert_resource(WindowDescriptor {
-            title: "".to_string(),
+            title: "Rust Space Invaders!".to_string(),
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)
-        // Insert builtins
-        .add_startup_system(setup.label("main_setup"))
+        .add_plugin(PhysicsPlugin::default())
+
+
         .add_plugins(DiagnosticsPluginGroup)// Debug
-        .add_plugins(SharedPluginGroup)// Debug
         .add_plugins(EntitiesPluginGroup)
+
+        // Insert builtins
+        .add_startup_system(setup)
+
+        // Plugins
 
         .run()
 }
@@ -120,6 +117,7 @@ fn setup(
     mut commands: Commands,
     mut windows: ResMut<Windows>,
     mut images: ResMut<Assets<Image>>,
+    // asset_server: Res<AssetServer>,
 ) {
     let v1 = Vec2::new(12., 12.);
     let v2 = Vec2::new(12., 12.);
@@ -140,7 +138,10 @@ fn setup(
         green_enemy: load_image(&mut images, SPRITE_DIR, GREEN_ENEMY_SPRITE),
         yellow_enemy: load_image(&mut images, SPRITE_DIR, YELLOW_ENEMY_SPRITE),
         player_laser: load_image(&mut images, SPRITE_DIR, PLAYER_LASER_SPRITE),
-        alien_laser: load_image(&mut images, SPRITE_DIR, ENEMY_LASER_SPRITE),
+    });
+    commands.insert_resource(WinSize {
+        w: window.width(),
+        h: window.height(),
     });
 
     // position window
