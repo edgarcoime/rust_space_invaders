@@ -107,7 +107,7 @@ fn manage_player_projectiles_hit_enemies (
 fn manage_projectiles_hit_obstacles (
     mut commands: Commands,
     mut obstacles_q: Query<
-        (Entity, &mut Health, &Sprite, &Transform),
+        (Entity, &mut Health, &RenderedAssetInfo, &Transform),
         With<Obstacle>,
     >,
     projectiles_q: Query<
@@ -118,30 +118,28 @@ fn manage_projectiles_hit_obstacles (
     // TODO: Prevent multiple despawn calls
     // When a laser hits two obstacles at the same time
     let mut entities_despawned: HashSet<Entity> = HashSet::new();
-    for (ob_en, mut ob_health, ob_sprite, ob_tf) in obstacles_q.iter_mut() {
-        for (proj_en, proj, proj_info, proj_tf) in projectiles_q.iter() {
-            if let Some(ob_size) = ob_sprite.custom_size {
-                let collision = collide(
-                    proj_tf.translation,
-                    proj_info.size,
-                    ob_tf.translation,
-                    ob_size
-                );
+    for (ob_en, mut ob_health, ob_rai, ob_tf) in obstacles_q.iter_mut() {
+        for (proj_en, proj, proj_rai, proj_tf) in projectiles_q.iter() {
+            let collision = collide(
+                proj_tf.translation,
+                proj_rai.size,
+                ob_tf.translation,
+                ob_rai.size,
+            );
 
-                if let Some(_) = collision {
-                    ob_health.current_hp -= proj.damage;
+            if let Some(_) = collision {
+                ob_health.current_hp -= proj.damage;
 
-                    // Despawn and ensure entity is not despawned twice
-                    if (entities_despawned.get(&proj_en)).is_none() {
-                        commands.entity(proj_en).despawn();
-                        entities_despawned.insert(proj_en);
-                    }
+                // Despawn and ensure entity is not despawned twice
+                if (entities_despawned.get(&proj_en)).is_none() {
+                    commands.entity(proj_en).despawn();
+                    entities_despawned.insert(proj_en);
+                }
 
-                    if  ob_health.current_hp <= 0 && 
-                        entities_despawned.get(&ob_en).is_none() {
-                            commands.entity(ob_en).despawn();
-                            entities_despawned.insert(ob_en);
-                    }
+                if  ob_health.current_hp <= 0 && 
+                    entities_despawned.get(&ob_en).is_none() {
+                        commands.entity(ob_en).despawn();
+                        entities_despawned.insert(ob_en);
                 }
             }
         }

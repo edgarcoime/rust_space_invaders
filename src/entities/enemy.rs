@@ -2,6 +2,8 @@ use bevy::{prelude::*, sprite, ecs::system::Command};
 use rand::{thread_rng, Rng};
 use crate::{Game, WinSize, SpriteInfos, shared::{Health, RenderedAssetInfo, WeaponState, Velocity, MovementSpeed}, AssetScaling, GAME_TIME_STEP};
 
+use super::Obstacle;
+
 enum AlienType {
     RED,
     GREEN,
@@ -24,7 +26,7 @@ struct AlienBundle {
     _e: Enemy,
     _h: Health,
     _ws: WeaponState,
-    _if: RenderedAssetInfo,
+    _rai: RenderedAssetInfo,
 }
 impl AlienBundle {
     fn new(x: f32, y: f32, alien_type: AlienType, sprite_infos: &Res<SpriteInfos>) -> Self {
@@ -52,7 +54,7 @@ impl AlienBundle {
             _e: Enemy,
             _h: Health::default(),
             _ws: WeaponState::fast_normal_weapon(),
-            _if: asset_info,
+            _rai: asset_info,
         }
     }
 }
@@ -120,7 +122,15 @@ fn setup_enemies(
     }
 }
 
-pub fn enemy_random_shoot(
+pub fn alien_hit_obstacle (
+    mut commands: Commands,
+    obstacle_q: Query<(Entity, &Sprite, &Transform), With<Obstacle>>,
+    enemy_q: Query<(&RenderedAssetInfo, &Transform), With<Enemy>>,
+) {
+
+}
+
+pub fn alien_random_shoot(
     mut commands: Commands,
     mut q: Query<(&mut WeaponState, &Transform), With<Enemy>>,
     mut alien_state: ResMut<AlienState>,

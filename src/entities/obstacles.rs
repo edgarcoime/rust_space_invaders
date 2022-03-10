@@ -1,6 +1,6 @@
 use bevy::{prelude::*, ecs::bundle, utils::HashSet};
 
-use crate::{shared::Health, WinSize};
+use crate::{shared::{Health, RenderedAssetInfo}, WinSize};
 
 const DEFAULT_OBSTACLE_AMOUNT: u32 = 4;
 const OBSTACLE_BLOCK_SIZE: f32 = 6.;
@@ -18,16 +18,18 @@ const OBSTACLE_SHAPE: [&str; 7] = [
 struct BlockBundle {
     #[bundle]
     _sb: SpriteBundle,
-    obstacle: Obstacle,
-    health: Health
+    _o: Obstacle,
+    _hp: Health,
+    _rai: RenderedAssetInfo,
 }
 impl BlockBundle {
     fn new(x: f32, y: f32, color: Color) -> Self {
+        let obs_size = Vec2::new(OBSTACLE_BLOCK_SIZE, OBSTACLE_BLOCK_SIZE) ;
         Self {
             _sb: SpriteBundle {
                 sprite: Sprite {
                     color: color,
-                    custom_size: Some(Vec2::new(OBSTACLE_BLOCK_SIZE, OBSTACLE_BLOCK_SIZE)),
+                    custom_size: Some(obs_size.clone()),
                     ..Default::default()
                 },
                 transform: Transform {
@@ -36,8 +38,9 @@ impl BlockBundle {
                 },
                 ..Default::default()
             },
-            obstacle: Obstacle,
-            health: Health::default(),
+            _o: Obstacle,
+            _hp: Health::default(),
+            _rai: RenderedAssetInfo::new(obs_size.clone())
         }
     }
 }
