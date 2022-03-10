@@ -3,6 +3,8 @@ use heron::prelude::*;
 
 use crate::{WinSize, SpriteInfos, shared::{WeaponState, MovementSpeed}, utils::RenderedAssetInfo, GAME_TIME_STEP};
 
+use super::BasicShipBundle;
+
 // region:      Components
 #[derive(Component)]
 pub struct Player;
@@ -19,10 +21,10 @@ pub struct PlayerState {
 struct PlayerBundle {
     #[bundle]
     _sb: SpriteBundle,
+    #[bundle]
+    _ship_bundle: BasicShipBundle,
     _p: Player,
     _ps: PlayerState,
-    _ws: WeaponState,
-    _ms: MovementSpeed,
     _rai: RenderedAssetInfo,
     _rb: RigidBody,
     _cs: CollisionShape,
@@ -44,8 +46,7 @@ impl PlayerBundle {
             },
             _p: Player,
             _ps: PlayerState { name: "Player 1".to_string() },
-            _ws: WeaponState::fast_normal_weapon(),
-            _ms: MovementSpeed::default(),
+            _ship_bundle: BasicShipBundle::default(),
             _rai: asset_info,
             _rb: RigidBody::KinematicPositionBased,
             _cs: CollisionShape::Cuboid {
