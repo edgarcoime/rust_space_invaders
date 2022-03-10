@@ -61,6 +61,41 @@ impl AlienBundle {
     }
 }
 
+#[derive(Bundle)]
+struct TopAlienBundle {
+    #[bundle]
+    _sb: SpriteBundle,
+    _e: Enemy,
+    _h: Health,
+    _ws: WeaponState,
+    _rai: RenderedAssetInfo
+} 
+impl TopAlienBundle {
+    fn new(x: f32, y: f32, sprite_infos: &Res<SpriteInfos>) -> Self {
+        let asset = sprite_infos.top_alien.clone();
+        let asset_size = Vec2::new (
+            1. * asset.1.x,
+            1. * asset.1.y,
+        );
+        let asset_info = RenderedAssetInfo::new(asset_size);
+
+        Self {
+            _sb: SpriteBundle {
+                texture: asset.0,
+                transform: Transform {
+                    translation: Vec3::new(x, y, 5.),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            _e: Enemy,
+            _h: Health::default(),
+            _ws: WeaponState::fast_normal_weapon(),
+            _rai: asset_info,
+        }
+    }
+}
+
 pub struct AlienState {
     movement_direction: f32,
     movement_speed: MovementSpeed,
@@ -128,6 +163,13 @@ fn setup_enemies(
             );
         }
     }
+}
+
+fn setup_top_alien(
+    mut commands: Commands,
+    sprite_infos: Res<SpriteInfos>
+) {
+    
 }
 
 pub fn alien_hit_obstacle (

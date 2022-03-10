@@ -27,6 +27,7 @@ const PLAYER_SPRITE: &str = "player.png";
 const RED_ENEMY_SPRITE: &str = "red.png";
 const GREEN_ENEMY_SPRITE: &str = "green.png";
 const YELLOW_ENEMY_SPRITE: &str = "yellow.png";
+const TOP_EXTRA_ENEMY_SPRITE: &str = "extra.png";
 
 const PLAYER_LASER_SPRITE: &str = "laser_a_01.png";
 const ENEMY_LASER_SPRITE: &str = "laser_b_01.png";
@@ -83,6 +84,7 @@ pub struct SpriteInfos {
     green_enemy: (Handle<Image>, Vec2),
     yellow_enemy: (Handle<Image>, Vec2),
     alien_laser: (Handle<Image>, Vec2),
+    top_alien: (Handle<Image>, Vec2),
 }
 // endregion:   Resources
 
@@ -141,6 +143,7 @@ fn setup(
         yellow_enemy: load_image(&mut images, SPRITE_DIR, YELLOW_ENEMY_SPRITE),
         player_laser: load_image(&mut images, SPRITE_DIR, PLAYER_LASER_SPRITE),
         alien_laser: load_image(&mut images, SPRITE_DIR, ENEMY_LASER_SPRITE),
+        top_alien: load_image(&mut images, SPRITE_DIR, TOP_EXTRA_ENEMY_SPRITE),
     });
 
     // position window
