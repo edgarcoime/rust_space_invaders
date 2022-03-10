@@ -5,12 +5,15 @@ mod diagnostics;
 mod entities;
 mod shared;
 // endregion:   Modules
-// region:      Modules
+
+// region:      Namespaces
 use bevy::prelude::*;
 use heron::prelude::*;
 use diagnostics::DiagnosticsPluginGroup;
 use entities::EntitiesPluginGroup;
+use shared::SharedPluginGroup;
 use utils::load_image;
+// endregion:   Namespaces
 
 // region:      Constants
 const WINDOW_WIDTH: f32 = 600.0;
@@ -92,6 +95,7 @@ fn main() {
         .init_resource::<WinSize>()
         .init_resource::<AssetScaling>()
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
+        // .insert_resource(Gravity::from(Vec2::new(0., 600.)))
         .insert_resource(WindowDescriptor {
             title: "Rust Space Invaders!".to_string(),
             width: WINDOW_WIDTH,
@@ -101,9 +105,9 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(PhysicsPlugin::default())
 
-
         .add_plugins(DiagnosticsPluginGroup)// Debug
         .add_plugins(EntitiesPluginGroup)
+        .add_plugins(SharedPluginGroup)
 
         // Insert builtins
         .add_startup_system(setup)
@@ -115,21 +119,12 @@ fn main() {
 
 fn setup(
     mut commands: Commands,
-    mut windows: ResMut<Windows>,
     mut images: ResMut<Assets<Image>>,
     // asset_server: Res<AssetServer>,
 ) {
-    let v1 = Vec2::new(12., 12.);
-    let v2 = Vec2::new(12., 12.);
-    println!("{}", (v1 + v2));
-    println!("{}", -(v1 + v2));
-
     println!("Main setup");
     // camera
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-
-    // set window
-    let window = windows.get_primary_mut().unwrap();
 
     // Create main resources
     commands.insert_resource(SpriteInfos {
@@ -139,11 +134,7 @@ fn setup(
         yellow_enemy: load_image(&mut images, SPRITE_DIR, YELLOW_ENEMY_SPRITE),
         player_laser: load_image(&mut images, SPRITE_DIR, PLAYER_LASER_SPRITE),
     });
-    commands.insert_resource(WinSize {
-        w: window.width(),
-        h: window.height(),
-    });
 
     // position window
-    window.set_position(IVec2::new(0, 0));
+    // window.set_position(IVec2::new(0, 0));
 }

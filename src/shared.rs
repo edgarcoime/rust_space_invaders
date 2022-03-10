@@ -3,7 +3,9 @@ mod attributes;
 mod physics;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
-use self::{weapons::WeaponsPlugin, attributes::AttributesPlugin, physics::PhysicsPlugin};
+pub use self::weapons::*;
+pub use self::physics::*;
+pub use self::attributes::*;
 
 pub struct SharedPluginGroup;
 impl PluginGroup for SharedPluginGroup {
