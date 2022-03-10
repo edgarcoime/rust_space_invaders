@@ -87,12 +87,9 @@ fn player_shooting(
 ) {
     if let Ok((player_tf, mut weapon_state)) = q.get_single_mut() {
         if weapon_state.ready && (kb.pressed(KeyCode::Space) || kb.pressed(KeyCode::Z)) {
-            let x = player_tf.translation.x;
-            let y = player_tf.translation.y;
-            let asset_size = Vec2::new(
-                asset_scaling.player_projectile.x * sprite_infos.player_laser.1.x,
-                asset_scaling.player_projectile.y * sprite_infos.player_laser.1.y,
-            );
+            let pos = player_tf.translation;
+            let asset_size = 
+                asset_scaling.enemy_projectile.truncate() * sprite_infos.player_laser.1;
             let asset_info = RenderedAssetInfo::new(asset_size);
 
             commands
@@ -104,7 +101,7 @@ fn player_shooting(
                     },
                     texture: sprite_infos.player_laser.0.clone(),
                     transform: Transform {
-                        translation: Vec3::new(x, y, 0.),
+                        translation: Vec3::new(pos.x, pos.y, 0.),
                         ..Default::default()
                     },
                     ..Default::default()
