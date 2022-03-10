@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use heron::prelude::*;
 
-use crate::{WinSize, SpriteInfos, shared::{MovementSpeed, WeaponState, Projectile}, utils::RenderedAssetInfo, GAME_TIME_STEP, AssetScaling};
+use crate::{WinSize, SpriteInfos, shared::{MovementSpeed, WeaponState, Projectile, WorldPhysicsLayer}, utils::RenderedAssetInfo, GAME_TIME_STEP, AssetScaling};
 use super::BasicShipBundle;
 
 // region:      Components
@@ -27,6 +27,7 @@ struct PlayerBundle {
     _rai: RenderedAssetInfo,
     _rb: RigidBody,
     _cs: CollisionShape,
+    _cl: CollisionLayers,
 }
 impl PlayerBundle {
     fn new(x: f32, y: f32, sprite_infos: &Res<SpriteInfos>) -> Self {
@@ -52,6 +53,7 @@ impl PlayerBundle {
                 half_extends: asset_size.extend(0.) / 2.,
                 border_radius: None,
             },
+            _cl: CollisionLayers::none()
         }
     }
 }
@@ -142,10 +144,18 @@ fn player_shooting(
                     half_segment: asset_size.y / 2.,
                     radius: asset_size.x / 2.,
                 })
+                .insert(Velocity::from_linear(Vec3::new(0., weapon_state.projectile_speed, 0.)))
                 // .insert(CollisionShape::Cuboid {
                 //     half_extends: asset_size.extend(0.) / 2.,
                 //     border_radius: None,
                 // })
+                .insert(
+                    CollisionLayers::none()
+                        .with_group(WorldPhysicsLayer::Projectile)
+                        .with_group(WorldPhysicsLayer::FriendlyProjectile)
+                        .with_mask(WorldPhysicsLayer::Obstacle)
+                        .with_mask(WorldPhysicsLayer::Enemy)
+                )
             ;
 
             // Set weapon state
