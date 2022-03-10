@@ -52,12 +52,15 @@ pub struct Game {
     active_enemies: i32,
 }
 
+#[derive(Clone)]
+pub struct SpriteInfo(Handle<Image>, Vec2);
+
 pub struct SpriteInfos {
-    player: (Handle<Image>, Vec2),
-    player_laser: (Handle<Image>, Vec2),
-    red_enemy: (Handle<Image>, Vec2),
-    green_enemy: (Handle<Image>, Vec2),
-    yellow_enemy: (Handle<Image>, Vec2),
+    player: SpriteInfo,
+    player_laser: SpriteInfo,
+    red_enemy: SpriteInfo,
+    green_enemy: SpriteInfo,
+    yellow_enemy: SpriteInfo,
 }
 
 pub struct AssetScaling {

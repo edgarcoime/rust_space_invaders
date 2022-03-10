@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use heron::prelude::*;
 
-use crate::{WinSize, SpriteInfos, shared::{WeaponState, MovementSpeed}, utils::RenderedAssetInfo, GAME_TIME_STEP};
-
+use crate::{WinSize, SpriteInfos, shared::{MovementSpeed, WeaponState, Projectile}, utils::RenderedAssetInfo, GAME_TIME_STEP, AssetScaling};
 use super::BasicShipBundle;
 
 // region:      Components
@@ -67,6 +66,7 @@ impl Plugin for PlayerPlugin {
                 setup_player
             )
             .add_system(player_movement)
+            .add_system(player_shooting)
         ;
     }
 }
@@ -77,7 +77,6 @@ fn setup_player(
     sprite_infos: Res<SpriteInfos>,
 ) {
     let bottom = -win_size.h / 2.;
-    println!("{}, {}", bottom, win_size.h);
     commands
         .spawn()
         .insert_bundle(PlayerBundle::new(0., bottom + 75. / 3., &sprite_infos))
@@ -86,7 +85,6 @@ fn setup_player(
 
 fn player_movement(
     mut q: Query<(&MovementSpeed, &mut Transform), With<Player>>,
-    time: Res<Time>,
     kb_in: Res<Input<KeyCode>>,
     win_size: Res<WinSize>,
     sprite_infos: Res<SpriteInfos>,
@@ -111,3 +109,47 @@ fn player_movement(
     }
 }
 
+fn player_shooting(
+    mut commands: Commands,
+    mut q: Query<(&Transform, &mut WeaponState), With<Player>>,
+    time: Res<Time>,
+    kb: Res<Input<KeyCode>>,
+    sprite_infos: Res<SpriteInfos>,
+    asset_scaling: Res<AssetScaling>,
+) {
+    if let Ok((player_tf, mut weapon_state)) = q.get_single_mut() {
+        if weapon_state.ready && (kb.pressed(KeyCode::Space) || kb.pressed(KeyCode::Z)) {
+            let asset = sprite_infos.player_laser.clone();
+            let pos = player_tf.translation;
+            let asset_size = 
+                asset_scaling.enemy_projectile.truncate() * sprite_infos.player_laser.1;
+            let asset_info = RenderedAssetInfo::new(asset_size);
+
+            commands
+                .spawn()
+                .insert_bundle(SpriteBundle {
+                    texture: asset.0,
+                    sprite: Sprite { custom_size: Some(asset_size), ..Default::default() },
+                    transform: Transform::from_translation(pos),
+                    ..Default::default()
+                })
+                .insert(asset_info)
+                .insert(Projectile::default())
+                .insert(FromPlayer)
+                // physics
+                .insert(RigidBody::KinematicVelocityBased)
+                .insert(CollisionShape::Capsule {
+                    half_segment: asset_size.y / 2.,
+                    radius: asset_size.x / 2.,
+                })
+                // .insert(CollisionShape::Cuboid {
+                //     half_extends: asset_size.extend(0.) / 2.,
+                //     border_radius: None,
+                // })
+            ;
+
+            // Set weapon state
+            weapon_state.fired(time.seconds_since_startup());
+        }
+    }
+}

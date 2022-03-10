@@ -39,6 +39,7 @@ impl WeaponState {
         self.last_fired = 0.;
     }
 }
+
 // endregion:   Components
 
 pub struct WeaponsPlugin;
