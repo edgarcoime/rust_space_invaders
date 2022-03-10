@@ -1,6 +1,8 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::collide_aabb::collide};
 
 use crate::{WinSize, SpriteInfos, shared::{Health, WeaponState, MovementSpeed, Projectile, Velocity, RenderedAssetInfo}, GAME_TIME_STEP, AssetScaling};
+
+use super::Enemy;
 
 #[derive(Component)]
 pub struct FromPlayer;
@@ -23,6 +25,7 @@ impl Plugin for PlayerPlugin {
             )
             .add_system(player_movement)
             .add_system(player_shooting)
+            .add_system(player_hit_enemy)
         ;
     }
 }
@@ -32,18 +35,26 @@ fn player_spawn (
     win_size: Res<WinSize>,
     sprite_infos: Res<SpriteInfos>,
 ) {
+    let asset = sprite_infos.player.clone();
+    let asset_size = Vec2::new(
+        1. * asset.1.x,
+        1. * asset.1.y,
+    );
+    let asset_info = RenderedAssetInfo::new(asset_size);
+
     let bottom = -win_size.h / 2.;
     commands
         .spawn_bundle(SpriteBundle {
-            texture: sprite_infos.player.0.clone(),
+            texture: asset.0,
             transform: Transform {
                 translation: Vec3::new(0., bottom + 75. / 3. + 5., 10.),
-                scale: Vec3::new(1., 1., 1.),
+                scale: Vec3::new(1., 1., 10.),
                 ..Default::default()
             },
             ..Default::default()
         })
         .insert(Player)
+        .insert(asset_info)
         .insert(Health::default())
         .insert(MovementSpeed { value: 250. })
         .insert(PlayerState { name: "Player 1".to_string() })
@@ -76,6 +87,29 @@ fn player_movement(
         };
     }
 }
+
+fn player_hit_enemy(
+    mut commands: Commands,
+    player_q: Query<(Entity, &Transform, &RenderedAssetInfo), With<Player>>,
+    enemy_q: Query<(Entity, &Transform, &RenderedAssetInfo), With<Enemy>>,
+) {
+    if let Ok((p_en, p_tf, p_rai)) = player_q.get_single() {
+        for (en_en, en_tf, en_rai) in enemy_q.iter() {
+            let collision = collide (
+                p_tf.translation,
+                p_rai.size,
+                en_tf.translation,
+                en_rai.size
+            );
+
+            if let Some(_) = collision {
+                // TODO: ensure despawned already
+                commands.entity(p_en).despawn();
+            }
+        }
+    }
+}
+
 
 fn player_shooting(
     mut commands: Commands,

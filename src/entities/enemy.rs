@@ -100,6 +100,7 @@ fn setup_enemies(
     commands.insert_resource(AlienState {
         movement_direction: -1.,
         movement_speed: MovementSpeed { value: 30. },
+        // movement_speed: MovementSpeed { value: 100. },
         move_down: false,
         available_to_shoot: 2,
     });
@@ -214,12 +215,19 @@ fn manage_alien_horizontal_movement(
 }
 
 fn manage_alien_vertical_movement(
-    mut q: Query<&mut Transform, With<Enemy>>,
-    mut alien_state: ResMut<AlienState>
+    mut commands: Commands,
+    mut q: Query<(Entity, &mut Transform), With<Enemy>>,
+    mut alien_state: ResMut<AlienState>,
+    win_size: Res<WinSize>,
 ) {
+    // let mut entities_despawned: HashSet<Entity> = HashSet::new();
     if alien_state.move_down {
-        for mut tf in q.iter_mut() {
+        for (en, mut tf) in q.iter_mut() {
             tf.translation.y += -10.;
+
+            if tf.translation.y.abs() > win_size.h / 2. {
+                commands.entity(en).despawn();
+            }
         }
         alien_state.move_down = false;
     }

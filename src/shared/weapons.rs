@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use bevy::{prelude::*, sprite::collide_aabb::{Collision, collide}, reflect::List};
-use crate::{Game, entities::{FromPlayer, Enemy, Obstacle}, SpriteInfos, AssetScaling};
+use crate::{Game, entities::{FromPlayer, Enemy, Obstacle, FromEnemy, Player}, SpriteInfos, AssetScaling};
 use super::{Health, RenderedAssetInfo};
 
 #[derive(Component)]
@@ -50,7 +50,7 @@ impl Plugin for WeaponsPlugin {
             .add_system(manage_all_weapons_state)
             .add_system(manage_player_projectiles_hit_enemies)
             .add_system(manage_projectiles_hit_obstacles)
-            // .add_system(display_events)
+            .add_system(manage_enemy_projectiles_hit_player)
         ;
     }
 }
@@ -66,6 +66,37 @@ fn manage_all_weapons_state (
 
         if w_state.last_fired == 0. || now > last_shot + w_state.cooldown {
             w_state.reset();
+        }
+    }
+}
+
+fn manage_enemy_projectiles_hit_player (
+    mut commands: Commands,
+    mut game: ResMut<Game>,
+    projectile_q: Query<
+        (Entity, &Projectile, &RenderedAssetInfo, &Transform), 
+        (With<FromEnemy>, With<Projectile>)
+    >, // projectiles
+    mut player_q: Query<(Entity, &mut Health, &RenderedAssetInfo, &Transform), With<Player>>,
+) {
+    let mut entities_despawned: HashSet<Entity> = HashSet::new();
+    if let Ok((p_en, mut p_hp, p_rai, p_tf)) = player_q.get_single_mut() {
+        for (proj_en, proj, proj_asset_info, proj_tf) in projectile_q.iter() {
+            let collision = collide(
+                proj_tf.translation,
+                proj_asset_info.size,
+                p_tf.translation,
+                p_rai.size,
+            );
+
+            if let Some(_) = collision {
+                p_hp.current_hp -= proj.damage;
+                commands.entity(proj_en).despawn();
+
+                if  p_hp.current_hp <= 0 {
+                    commands.entity(p_en).despawn();
+                }
+            }
         }
     }
 }
