@@ -1,5 +1,6 @@
-use bevy::{prelude::*, sprite, ecs::system::Command};
-use rand::{thread_rng, Rng};
+use std::collections::HashSet;
+
+use bevy::{prelude::*, sprite::{self, collide_aabb::collide}};
 use crate::{Game, WinSize, SpriteInfos, shared::{Health, RenderedAssetInfo, WeaponState, Velocity, MovementSpeed}, AssetScaling, GAME_TIME_STEP};
 
 use super::Obstacle;
@@ -79,6 +80,7 @@ impl Plugin for EnemyPlugin {
                     .with_system(manage_alien_movement_direction)
                     .with_system(manage_alien_horizontal_movement)
                     .with_system(manage_alien_vertical_movement)
+                    .with_system(alien_hit_obstacle)
             )
             ;
     }
@@ -124,10 +126,27 @@ fn setup_enemies(
 
 pub fn alien_hit_obstacle (
     mut commands: Commands,
-    obstacle_q: Query<(Entity, &Sprite, &Transform), With<Obstacle>>,
+    obstacle_q: Query<(Entity, &RenderedAssetInfo, &Transform), With<Obstacle>>,
     enemy_q: Query<(&RenderedAssetInfo, &Transform), With<Enemy>>,
 ) {
+    let mut entities_despawned: HashSet<Entity> = HashSet::new();
+    for (ob_en, ob_rai, ob_tf) in obstacle_q.iter() {
+        for (en_rai, en_tf) in enemy_q.iter() {
+            let collision = collide (
+                ob_tf.translation,
+                ob_rai.size,
+                en_tf.translation,
+                en_rai.size
+            );
 
+            if let Some(_) = collision {
+                if (entities_despawned.get(&ob_en)).is_none() {
+                    commands.entity(ob_en).despawn();
+                    entities_despawned.insert(ob_en);
+                }
+            }
+        }
+    }
 }
 
 pub fn alien_random_shoot(
