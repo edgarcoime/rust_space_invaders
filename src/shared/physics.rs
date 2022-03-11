@@ -1,7 +1,11 @@
 use std::collections::HashSet;
 
-use bevy::{prelude::*, render::render_phase::EntityPhaseItem};
+use bevy::{prelude::*, render::render_phase::EntityPhaseItem, ecs::{archetype::Archetypes, component::Components}};
 use heron::{PhysicsLayer, CollisionLayers, CollisionEvent};
+
+use crate::{entities::Obstacle, utils::get_components_for_entity};
+
+use super::{Projectile, Health};
 
 #[derive(PhysicsLayer)]
 pub enum WorldPhysicsLayer {
@@ -22,7 +26,12 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
-fn manage_projectile_hit_obstacles(mut commands: Commands, mut events: EventReader<CollisionEvent>) {
+fn manage_projectile_hit_obstacles(
+    mut commands: Commands, 
+    mut events: EventReader<CollisionEvent>,
+    mut obs_q: Query<&mut Health, With<Obstacle>>,
+    proj_q: Query<&Projectile, With<Projectile>>,
+) {
     let mut entities_despawned: HashSet<Entity> = HashSet::new();
     events
         .iter()
@@ -38,16 +47,26 @@ fn manage_projectile_hit_obstacles(mut commands: Commands, mut events: EventRead
                 None
             }
         })
-        .for_each(|(obj_en, proj_en)| {
-            if (entities_despawned.get(&obj_en)).is_none() {
-                commands.entity(obj_en).despawn();
-                entities_despawned.insert(obj_en);
-            }
+        .for_each(|(obs_en, proj_en)| {
+            if let (Ok(mut obs_hp), Ok(projectile)) 
+                = (obs_q.get_mut(obs_en), proj_q.get(proj_en)) 
+                {
 
-            if (entities_despawned.get(&proj_en)).is_none() {
-                commands.entity(proj_en).despawn();
-                entities_despawned.insert(proj_en);
-            }
+                    // calculate damage and despawn
+                    if (entities_despawned.get(&proj_en)).is_none() 
+                    {
+                        obs_hp.current_hp -= projectile.damage;
+                        commands.entity(proj_en).despawn();
+                        entities_despawned.insert(proj_en);
+                    }
+
+                    if  (entities_despawned.get(&obs_en)).is_none() 
+                        && obs_hp.dead()
+                    {
+                        commands.entity(obs_en).despawn();
+                        entities_despawned.insert(obs_en);
+                    }
+                }
         });
 }
 

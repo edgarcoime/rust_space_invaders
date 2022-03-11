@@ -32,6 +32,10 @@ impl Health {
             current_hp: hp,
         }
     }
+
+    pub fn dead(&self) -> bool {
+        self.current_hp <= 0
+    }
 }
 
 pub struct AttributesPlugin;

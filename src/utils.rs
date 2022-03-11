@@ -1,5 +1,5 @@
 use std::path::Path;
-use bevy::{prelude::*, render::texture::ImageType};
+use bevy::{prelude::*, render::texture::ImageType, ecs::{archetype::Archetypes, component::ComponentId}};
 
 use crate::SpriteInfo;
 
@@ -21,4 +21,16 @@ pub fn load_image(images: &mut ResMut<Assets<Image>>, dir: &str, filename: &str)
 	let size = Vec2::new(size.width as f32, size.height as f32);
 	let image_handle = images.add(image);
 	SpriteInfo(image_handle, size)
+}
+
+pub fn get_components_for_entity<'a>(
+	entity: &Entity,
+	archetypes: &'a Archetypes,
+) -> Option<impl Iterator<Item = ComponentId> + 'a> {
+	for archetype in archetypes.iter() {
+			if archetype.entities().contains(entity) {
+					return Some(archetype.components());
+			}
+	}
+	None
 }

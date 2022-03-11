@@ -3,7 +3,7 @@ use bevy::prelude::*;
 // region:      Components
 #[derive(Component)]
 pub struct Projectile {
-    damage: u32
+    pub damage: u32
 }
 impl Default for Projectile {
     fn default() -> Self {
@@ -22,9 +22,9 @@ impl WeaponState {
     pub fn fast_normal_weapon() -> Self {
         Self {
             ready: true,
-            cooldown: 0.8,
+            cooldown: 0.6,
             last_fired: 0.,
-            projectile_speed: 250.,
+            projectile_speed: 275.,
             // projectile_speed: 100.,
         }
     }
