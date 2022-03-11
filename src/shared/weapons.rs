@@ -24,7 +24,7 @@ impl WeaponState {
             ready: true,
             cooldown: 0.6,
             last_fired: 0.,
-            projectile_speed: 275.,
+            projectile_speed: 300.,
             // projectile_speed: 100.,
         }
     }

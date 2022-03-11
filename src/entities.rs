@@ -3,6 +3,9 @@ mod player;
 mod obstacles;
 
 use bevy::{app::PluginGroupBuilder, prelude::*};
+use heron::CollisionLayers;
+use heron::CollisionShape;
+use heron::RigidBody;
 use crate::shared::Health;
 use crate::shared::MovementSpeed;
 use crate::shared::WeaponState;
@@ -25,6 +28,13 @@ impl Default for BasicShipBundle {
             _ws: WeaponState::fast_normal_weapon(),
         }
     }
+}
+
+#[derive(Bundle)]
+pub struct EntityPhysicsBundle {
+    _rb: RigidBody,
+    _cs: CollisionShape,
+    _cl: CollisionLayers,
 }
 
 

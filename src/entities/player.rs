@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use heron::prelude::*;
 
 use crate::{WinSize, SpriteInfos, shared::{MovementSpeed, WeaponState, Projectile, WorldPhysicsLayer}, utils::RenderedAssetInfo, GAME_TIME_STEP, AssetScaling};
-use super::BasicShipBundle;
+use super::{BasicShipBundle, EntityPhysicsBundle};
 
 // region:      Components
 #[derive(Component)]
@@ -22,12 +22,11 @@ struct PlayerBundle {
     _sb: SpriteBundle,
     #[bundle]
     _ship_bundle: BasicShipBundle,
+    #[bundle]
+    _phys: EntityPhysicsBundle,
     _p: Player,
     _ps: PlayerState,
     _rai: RenderedAssetInfo,
-    _rb: RigidBody,
-    _cs: CollisionShape,
-    _cl: CollisionLayers,
 }
 impl PlayerBundle {
     fn new(x: f32, y: f32, sprite_infos: &Res<SpriteInfos>) -> Self {
@@ -48,12 +47,14 @@ impl PlayerBundle {
             _ps: PlayerState { name: "Player 1".to_string() },
             _ship_bundle: BasicShipBundle::default(),
             _rai: asset_info,
-            _rb: RigidBody::KinematicPositionBased,
-            _cs: CollisionShape::Cuboid {
-                half_extends: asset_size.extend(0.) / 2.,
-                border_radius: None,
-            },
-            _cl: CollisionLayers::none()
+            _phys: EntityPhysicsBundle {
+                _rb: RigidBody::KinematicPositionBased,
+                _cs: CollisionShape::Cuboid {
+                    half_extends: asset_size.extend(0.) / 2.,
+                    border_radius: None,
+                },
+                _cl: CollisionLayers::none()
+            }
         }
     }
 }
