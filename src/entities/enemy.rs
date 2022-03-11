@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use heron::prelude::*;
 
-use crate::{shared::{Health, WeaponState, MovementSpeed}, utils::RenderedAssetInfo, SpriteInfos, SpriteInfo, GAME_TIME_STEP, WinSize};
+use crate::{shared::{Health, WeaponState, MovementSpeed, WorldPhysicsLayer}, utils::RenderedAssetInfo, SpriteInfos, SpriteInfo, GAME_TIME_STEP, WinSize};
 
 use super::{EntityPhysicsBundle, BasicShipBundle};
 
@@ -83,6 +83,9 @@ impl AlienBundle {
                     border_radius: None,
                 },
                 _cl: CollisionLayers::none()
+                    .with_group(WorldPhysicsLayer::Enemy)
+                    .with_mask(WorldPhysicsLayer::Player)
+                    .with_mask(WorldPhysicsLayer::FriendlyProjectile)
             }
         }
     }
