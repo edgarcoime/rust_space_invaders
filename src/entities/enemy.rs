@@ -190,8 +190,8 @@ pub fn alien_random_shoot(
                     half_segment: asset_size.y / 2.,
                     radius: asset_size.x / 2.,
                 })
-                // .insert(Velocity::from_linear(Vec3::new(0., -weapon_state.projectile_speed, 0.)))
-                .insert(Velocity::from_linear(Vec3::new(0., -100., 0.)))
+                .insert(Velocity::from_linear(Vec3::new(0., -weapon_state.projectile_speed, 0.)))
+                // .insert(Velocity::from_linear(Vec3::new(0., -100., 0.)))
                 .insert(
                     CollisionLayers::none()
                         .with_group(WorldPhysicsLayer::Projectile)

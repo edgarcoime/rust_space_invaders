@@ -8,8 +8,8 @@ edition = "2021"
 [dependencies]
 bevy = "0.6.1"
 rand = "0.8.5"
-heron = { version = "2.2.0", features = ["2d", "debug-2d"] }
-# heron = { version = "2.2.0", features = ["2d"] }
+# heron = { version = "2.2.0", features = ["2d", "debug-2d"] }
+heron = { version = "2.2.0", features = ["2d"] }
 
 # Add this to your Cargo.toml
 # [profile.dev.package.heron]

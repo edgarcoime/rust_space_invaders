@@ -7,7 +7,7 @@ mod shared;
 // endregion:   Modules
 
 // region:      Namespaces
-use bevy::prelude::*;
+use bevy::{prelude::*};
 use heron::prelude::*;
 use diagnostics::DiagnosticsPluginGroup;
 use entities::EntitiesPluginGroup;
@@ -110,7 +110,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(PhysicsPlugin::default())
 
-        .add_plugins(DiagnosticsPluginGroup)// Debug
+        // .add_plugins(DiagnosticsPluginGroup)// Debug
         .add_plugins(EntitiesPluginGroup)
         .add_plugins(SharedPluginGroup)
 

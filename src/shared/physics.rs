@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use bevy::{prelude::*, render::render_phase::EntityPhaseItem, ecs::{archetype::Archetypes, component::Components}};
+use bevy::{prelude::*};
 use heron::{PhysicsLayer, CollisionLayers, CollisionEvent};
 
 use crate::{entities::{Obstacle, Enemy, Friendly}, utils::get_components_for_entity};
@@ -63,21 +63,19 @@ fn manage_projectile_hit_obstacles(
             if let (Ok(mut obs_hp), Ok(projectile)) 
                 = (obs_q.get_mut(obs_en), proj_q.get(proj_en)) 
                 {
-                    println!("Running projectile hit obstacles logic");
-
                     // calculate damage and despawn
-                    if (entities_despawned.get(&proj_en)).is_none() 
+                    if entities_despawned.get(&proj_en).is_none() 
                     {
+                        entities_despawned.insert(proj_en);
                         obs_hp.current_hp -= projectile.damage;
                         commands.entity(proj_en).despawn();
-                        entities_despawned.insert(proj_en);
                     }
 
-                    if  (entities_despawned.get(&obs_en)).is_none() 
+                    if  entities_despawned.get(&obs_en).is_none() 
                         && obs_hp.dead()
                     {
-                        commands.entity(obs_en).despawn();
                         entities_despawned.insert(obs_en);
+                        commands.entity(obs_en).despawn();
                     }
                 }
         });
@@ -110,7 +108,6 @@ fn manage_friendly_projectiles_hit_enemy (
                 = (proj_q.get(proj_en), enemy_q.get_mut(enemy_en)) 
                 {
                     println!("Running FRIENDLY projectile hit ENEMY logic");
-
                     // calculate damage and despawn
                     if (entities_despawned.get(&proj_en)).is_none() 
                     {
@@ -152,14 +149,6 @@ fn manage_hostile_projectiles_hit_friendly (
             }
         })
         .for_each(|(proj_en, friendly_en)| {
-            // println!("Getting hit but no checking?");
-            // if let Ok(projectile) = proj_q.get(proj_en) {
-            //     println!("Found projectile");
-            // }
-
-            // if let Ok(friendly_hp) = friendly_q.get(friendly_en) {
-            //     println!("Found hp");
-            // }
             if let (Ok(projectile), Ok(mut friendly_hp)) 
                 = (proj_q.get(proj_en), friendly_q.get_mut(friendly_en)) 
                 {
@@ -204,7 +193,7 @@ fn manage_enemy_hit_obstacles(
             }
         })
         .for_each(|(obs_en, _)| {
-            println!("Running ALL projectile hit OBSTACLE logic");
+            println!("Running ENEMIES hit OBSTACLE logic");
 
             if entities_despawned.get(&obs_en).is_none() {
                 commands.entity(obs_en).despawn();

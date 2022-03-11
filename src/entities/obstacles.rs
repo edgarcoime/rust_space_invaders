@@ -66,12 +66,12 @@ impl BlockBundle {
 pub struct ObstaclesPlugin;
 impl Plugin for ObstaclesPlugin {
     fn build(&self, app: &mut App) {
-        // app
-        //     .add_startup_system_to_stage(
-        //         StartupStage::PostStartup, 
-        //         setup_obstacles
-        //     )
-        // ;
+        app
+            .add_startup_system_to_stage(
+                StartupStage::PostStartup, 
+                setup_obstacles
+            )
+        ;
     }
 }
 
@@ -79,13 +79,6 @@ fn setup_obstacles(
     mut commands: Commands,
     win_size: Res<WinSize>,
 ) {
-
-    // let color = Color::hex("F14F50").unwrap();
-    // let color = Color::rgb(241. / 255., 79. / 255., 80. / 255.);
-    // println!("{:?}", color.as_rgba());
-    // create_obstacle(&mut commands, Vec2::new(0., 0.), 0.);
-    // commands.spawn_bundle(BlockBundle::new(0., 0., color));
-
     let x_start = (-win_size.w / 2.) + (win_size.w / 15.);
     let y_start = -(win_size.h/2.) + 100.;
     let num_obstacles = DEFAULT_OBSTACLE_AMOUNT;
@@ -106,16 +99,16 @@ fn setup_obstacles(
 }
 
 fn create_obstacle(commands: &mut Commands, start_position: Vec2, offset_x: f32) {
+    let color = Color::rgb(241. / 255., 79. / 255., 80. / 255.);
     for (row_idx, row) in OBSTACLE_SHAPE.iter().rev().enumerate() {
         for (col_idx, col) in row.chars().enumerate() {
             if col == 'x' {
                 let x = start_position.x + (col_idx as f32 * (OBSTACLE_BLOCK_SIZE)) + offset_x;
                 let y = start_position.y + (row_idx as f32 * (OBSTACLE_BLOCK_SIZE));
 
-                let color = Color::hex("F14F50").unwrap();
+                // let color = Color::hex("F14F50").unwrap();
                 commands
                     .spawn_bundle(BlockBundle::new(x, y, color));
-                    // .spawn_bundle(BlockBundle::new(x, y, Color::ORANGE_RED));
             }
         }
     }
