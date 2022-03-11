@@ -55,6 +55,7 @@ impl PlayerBundle {
                 },
                 _cl: CollisionLayers::none()
                     .with_group(WorldPhysicsLayer::Player)
+                    .with_group(WorldPhysicsLayer::Friendly)
                     .with_mask(WorldPhysicsLayer::Enemy)
                     .with_mask(WorldPhysicsLayer::HostileProjectile)
             }

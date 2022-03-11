@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use bevy::{prelude::*, render::render_phase::EntityPhaseItem, ecs::{archetype::Archetypes, component::Components}};
 use heron::{PhysicsLayer, CollisionLayers, CollisionEvent};
 
-use crate::{entities::{Obstacle, Enemy}, utils::get_components_for_entity};
+use crate::{entities::{Obstacle, Enemy, Friendly}, utils::get_components_for_entity};
 
 use super::{Projectile, Health};
 
@@ -11,6 +11,7 @@ use super::{Projectile, Health};
 pub enum WorldPhysicsLayer {
     Enemy,
     Player,
+    Friendly,
     FriendlyProjectile,
     HostileProjectile,
     Projectile,
@@ -26,7 +27,7 @@ impl Plugin for PhysicsPlugin {
                 SystemSet::new()
                     .with_system(manage_projectile_hit_obstacles)
                     .with_system(manage_friendly_projectiles_hit_enemy)
-
+                    .with_system(manage_hostile_projectiles_hit_friendly)
             )
         ;
     }
@@ -120,8 +121,59 @@ fn manage_friendly_projectiles_hit_enemy (
         });
 }
 
+fn manage_hostile_projectiles_hit_friendly (
+    mut commands: Commands, 
+    mut events: EventReader<CollisionEvent>,
+    mut friendly_q: Query<&mut Health, With<Friendly>>,
+    proj_q: Query<&Projectile, With<Projectile>>,
+) {
+    let mut entities_despawned: HashSet<Entity> = HashSet::new();
+    events
+        .iter()
+        .filter(|e| e.is_started())
+        .filter_map(|event| {
+            let (entity_1, entity_2) = event.rigid_body_entities();
+            let (layers_1, layers_2) = event.collision_layers();
+
+            if is_hostile_projectile(layers_1) && is_friendly(layers_2) {
+                Some((entity_1, entity_2))
+            } else if is_friendly(layers_1) && is_hostile_projectile(layers_2) {
+                Some((entity_2, entity_1))
+            } else {
+                None
+            }
+        })
+        .for_each(|(proj_en, friendly_en)| {
+            if let (Ok(projectile), Ok(mut friendly_hp)) 
+                = (proj_q.get(proj_en), friendly_q.get_mut(friendly_en)) 
+                {
+                    // calculate damage and despawn
+                    if (entities_despawned.get(&proj_en)).is_none() 
+                    {
+                        friendly_hp.current_hp -= projectile.damage;
+                        commands.entity(proj_en).despawn();
+                        entities_despawned.insert(proj_en);
+                    }
+
+                    if  (entities_despawned.get(&friendly_en)).is_none() 
+                        && friendly_hp.dead()
+                    {
+                        commands.entity(friendly_en).despawn();
+                        entities_despawned.insert(friendly_en);
+                    }
+                }
+        });
+}
+
+
+
 pub fn is_player(layers: CollisionLayers) -> bool {
     layers.contains_group(WorldPhysicsLayer::Player) && 
+    !layers.contains_group(WorldPhysicsLayer::Enemy)
+}
+
+pub fn is_friendly(layers: CollisionLayers) -> bool {
+    layers.contains_group(WorldPhysicsLayer::Friendly) && 
     !layers.contains_group(WorldPhysicsLayer::Enemy)
 }
 

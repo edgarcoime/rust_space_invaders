@@ -37,6 +37,8 @@ pub struct EntityPhysicsBundle {
     _cl: CollisionLayers,
 }
 
+#[derive(Component)]
+pub struct Friendly;
 
 pub struct EntitiesPluginGroup;
 impl PluginGroup for EntitiesPluginGroup {
