@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use heron::prelude::*;
 
-use crate::{shared::{Health, WeaponState, MovementSpeed}, utils::RenderedAssetInfo, SpriteInfos, SpriteInfo};
+use crate::{shared::{Health, WeaponState, MovementSpeed}, utils::RenderedAssetInfo, SpriteInfos, SpriteInfo, GAME_TIME_STEP, WinSize};
 
 use super::{EntityPhysicsBundle, BasicShipBundle};
 
@@ -97,6 +97,12 @@ impl Plugin for EnemyPlugin {
                 StartupStage::PostStartup,
                 setup_enemies,
             )
+            .add_system_set(
+                SystemSet::new()
+                    .with_system(manage_alien_movement_direction)
+                    .with_system(manage_alien_horizontal_movement)
+                    .with_system(manage_alien_vertical_movement)
+            )
         ;
     }
 }
@@ -126,3 +132,51 @@ fn setup_enemies(mut commands: Commands, sprite_infos: Res<SpriteInfos>) {
         }
     }
 }
+
+// region:      Enemy Formation movement
+fn manage_alien_horizontal_movement(
+    mut q: Query<&mut Transform, With<Enemy>>,
+    alien_state: ResMut<AlienFormationState>
+) {
+    for mut tf in q.iter_mut() {
+        tf.translation.x += 
+            alien_state.movement_direction * 
+            alien_state.movement_speed.value * 
+            GAME_TIME_STEP;
+    }
+}
+
+fn manage_alien_vertical_movement(
+    mut commands: Commands,
+    mut q: Query<(Entity, &mut Transform), With<Enemy>>,
+    mut alien_state: ResMut<AlienFormationState>,
+    win_size: Res<WinSize>,
+) {
+    // let mut entities_despawned: HashSet<Entity> = HashSet::new();
+    if alien_state.move_down {
+        for (en, mut tf) in q.iter_mut() {
+            tf.translation.y += -10.;
+
+            if tf.translation.y.abs() > win_size.h / 2. {
+                commands.entity(en).despawn();
+            }
+        }
+        alien_state.move_down = false;
+    }
+}
+
+fn manage_alien_movement_direction(
+    mut q: Query<(&mut Transform, &RenderedAssetInfo), With<Enemy>>,
+    mut alien_state: ResMut<AlienFormationState>,
+    win_size: Res<WinSize>,
+) {
+    for (tf, info) in q.iter_mut() {
+        let curr_x = tf.translation.x;
+        if curr_x.abs() >= (win_size.w / 2.) - (info.size.x / 2.) {
+            alien_state.movement_direction *= -1.;
+            alien_state.move_down = true;
+            break;
+        }
+    }
+}
+// endregion:   Enemy Formation movement
