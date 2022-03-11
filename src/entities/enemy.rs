@@ -1,7 +1,10 @@
-use bevy::prelude::*;
-use heron::prelude::*;
+use std::f32::consts::PI;
 
-use crate::{shared::{Health, WeaponState, MovementSpeed, WorldPhysicsLayer}, utils::RenderedAssetInfo, SpriteInfos, SpriteInfo, GAME_TIME_STEP, WinSize};
+use bevy::{prelude::*, core::FixedTimestep};
+use heron::prelude::*;
+use rand::prelude::SliceRandom;
+
+use crate::{shared::{Health, WeaponState, MovementSpeed, WorldPhysicsLayer, Projectile}, utils::RenderedAssetInfo, SpriteInfos, SpriteInfo, GAME_TIME_STEP, WinSize, AssetScaling};
 
 use super::{EntityPhysicsBundle, BasicShipBundle};
 
@@ -22,8 +25,8 @@ impl Default for AlienFormationState {
     fn default() -> Self {
         Self {
             movement_direction: -1.,
-            // movement_speed: MovementSpeed { value: 30. },
-            movement_speed: MovementSpeed { value: 100. },
+            movement_speed: MovementSpeed { value: 30. },
+            // movement_speed: MovementSpeed { value: 100. },
             move_down: false,
             available_to_shoot: 2,
         }
@@ -108,6 +111,11 @@ impl Plugin for EnemyPlugin {
                     .with_system(manage_alien_horizontal_movement)
                     .with_system(manage_alien_vertical_movement)
             )
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(FixedTimestep::step(0.800))
+                    .with_system(alien_random_shoot)
+            )
         ;
     }
 }
@@ -137,6 +145,65 @@ fn setup_enemies(mut commands: Commands, sprite_infos: Res<SpriteInfos>) {
         }
     }
 }
+
+// region:      Shooting
+pub fn alien_random_shoot(
+    mut commands: Commands,
+    mut q: Query<(&mut WeaponState, &Transform), With<Enemy>>,
+    mut alien_state: ResMut<AlienFormationState>,
+    time: Res<Time>,
+    sprite_infos: Res<SpriteInfos>,
+    asset_scaling: Res<AssetScaling>,
+) {
+    // TODO: how to choose randomly more efficiently?
+    let vec_q = q
+        .iter()
+        .collect::<Vec<_>>();
+    let q_rand = vec_q
+        .choose_multiple(&mut rand::thread_rng(), alien_state.available_to_shoot.try_into().unwrap());
+
+    for (weapon_state, tf) in q_rand.into_iter() {
+        if weapon_state.ready {
+            let asset = sprite_infos.alien_laser.clone();
+            let pos = tf.translation;
+            let asset_size = 
+                asset_scaling.enemy_projectile.truncate() * asset.1;
+            let asset_info = RenderedAssetInfo::new(asset_size);
+            
+            commands
+                .spawn()
+                .insert_bundle(SpriteBundle {
+                    texture: asset.0,
+                    sprite: Sprite { custom_size: Some(asset_size), ..Default::default() },
+                    transform: Transform {
+                        rotation: Quat::from_rotation_z(PI),
+                        translation: pos,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })
+                .insert(asset_info)
+                .insert(Projectile::default())
+                .insert(FromEnemy)
+                .insert(RigidBody::KinematicVelocityBased)
+                .insert(CollisionShape::Capsule {
+                    half_segment: asset_size.y / 2.,
+                    radius: asset_size.x / 2.,
+                })
+                // .insert(Velocity::from_linear(Vec3::new(0., -weapon_state.projectile_speed, 0.)))
+                .insert(Velocity::from_linear(Vec3::new(0., -100., 0.)))
+                .insert(
+                    CollisionLayers::none()
+                        .with_group(WorldPhysicsLayer::Projectile)
+                        .with_group(WorldPhysicsLayer::HostileProjectile)
+                        .with_mask(WorldPhysicsLayer::Obstacle)
+                        .with_mask(WorldPhysicsLayer::Friendly)
+                )
+                ;
+        }
+    }
+}
+// endregion:   Shooting
 
 // region:      Enemy Formation movement
 fn manage_alien_horizontal_movement(

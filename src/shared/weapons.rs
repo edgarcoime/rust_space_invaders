@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 
+use crate::WinSize;
+
 // region:      Components
 #[derive(Component)]
 pub struct Projectile {
-    pub damage: u32
+    pub damage: i32
 }
 impl Default for Projectile {
     fn default() -> Self {
@@ -47,6 +49,7 @@ impl Plugin for WeaponsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system(manage_all_weapons_state)
+            .add_system(manage_all_projectile_out_of_bounds)
         ;
     }
 }
@@ -63,5 +66,18 @@ fn manage_all_weapons_state (
         if w_state.last_fired == 0. || now > last_shot + w_state.cooldown {
             w_state.reset();
         }
+    }
+}
+
+fn manage_all_projectile_out_of_bounds (
+    mut commands: Commands,
+    q: Query<(Entity, &Transform), With<Projectile>>,
+    win_size: Res<WinSize>,
+) {
+    for (en, tf) in q.iter() {
+        if  tf.translation.y.abs() > win_size.h / 2. + 50. ||
+            tf.translation.x.abs() > win_size.w / 2. + 50. {
+                commands.entity(en).despawn();
+            }
     }
 }

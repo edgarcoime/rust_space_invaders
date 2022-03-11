@@ -14,8 +14,8 @@ impl Default for MovementSpeed {
 
 #[derive(Component)]
 pub struct Health {
-    pub original_hp: u32,
-    pub current_hp: u32,
+    pub original_hp: i32,
+    pub current_hp: i32,
 }
 impl Default for Health {
     fn default() -> Self {
@@ -26,7 +26,7 @@ impl Default for Health {
     }
 }
 impl Health {
-    pub fn from(hp: u32) -> Self {
+    pub fn from(hp: i32) -> Self {
         Self {
             original_hp: hp,
             current_hp: hp,

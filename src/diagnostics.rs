@@ -5,7 +5,7 @@ impl PluginGroup for DiagnosticsPluginGroup {
     fn build(&mut self, group: &mut PluginGroupBuilder) {
         group
             // Adds frame time diagnostics
-            .add(FrameTimeDiagnosticsPlugin::default())
+            // .add(FrameTimeDiagnosticsPlugin::default())
             // Adds a system that prints diagnostics to the console
             .add(LogDiagnosticsPlugin::default())
             // Any plugin can register diagnostics

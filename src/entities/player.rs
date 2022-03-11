@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use heron::prelude::*;
 
 use crate::{WinSize, SpriteInfos, shared::{MovementSpeed, WeaponState, Projectile, WorldPhysicsLayer}, utils::RenderedAssetInfo, GAME_TIME_STEP, AssetScaling};
-use super::{BasicShipBundle, EntityPhysicsBundle};
+use super::{BasicShipBundle, EntityPhysicsBundle, Friendly};
 
 // region:      Components
 #[derive(Component)]
@@ -24,6 +24,7 @@ struct PlayerBundle {
     _ship_bundle: BasicShipBundle,
     #[bundle]
     _phys: EntityPhysicsBundle,
+    _f: Friendly,
     _p: Player,
     _ps: PlayerState,
     _rai: RenderedAssetInfo,
@@ -44,6 +45,7 @@ impl PlayerBundle {
                 ..Default::default()
             },
             _p: Player,
+            _f: Friendly,
             _ps: PlayerState { name: "Player 1".to_string() },
             _ship_bundle: BasicShipBundle::default(),
             _rai: asset_info,

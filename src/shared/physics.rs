@@ -63,6 +63,7 @@ fn manage_projectile_hit_obstacles(
             if let (Ok(mut obs_hp), Ok(projectile)) 
                 = (obs_q.get_mut(obs_en), proj_q.get(proj_en)) 
                 {
+                    println!("Running projectile hit obstacles logic");
 
                     // calculate damage and despawn
                     if (entities_despawned.get(&proj_en)).is_none() 
@@ -108,6 +109,8 @@ fn manage_friendly_projectiles_hit_enemy (
             if let (Ok(projectile), Ok(mut enemy_hp)) 
                 = (proj_q.get(proj_en), enemy_q.get_mut(enemy_en)) 
                 {
+                    println!("Running FRIENDLY projectile hit ENEMY logic");
+
                     // calculate damage and despawn
                     if (entities_despawned.get(&proj_en)).is_none() 
                     {
@@ -149,9 +152,19 @@ fn manage_hostile_projectiles_hit_friendly (
             }
         })
         .for_each(|(proj_en, friendly_en)| {
+            // println!("Getting hit but no checking?");
+            // if let Ok(projectile) = proj_q.get(proj_en) {
+            //     println!("Found projectile");
+            // }
+
+            // if let Ok(friendly_hp) = friendly_q.get(friendly_en) {
+            //     println!("Found hp");
+            // }
             if let (Ok(projectile), Ok(mut friendly_hp)) 
                 = (proj_q.get(proj_en), friendly_q.get_mut(friendly_en)) 
                 {
+                    println!("Running HOSTILE projectile hit FRIENDLY logic");
+
                     // calculate damage and despawn
                     if (entities_despawned.get(&proj_en)).is_none() 
                     {
@@ -167,7 +180,8 @@ fn manage_hostile_projectiles_hit_friendly (
                         entities_despawned.insert(friendly_en);
                     }
                 }
-        });
+            }
+        );
 }
 
 fn manage_enemy_hit_obstacles(
@@ -190,6 +204,8 @@ fn manage_enemy_hit_obstacles(
             }
         })
         .for_each(|(obs_en, _)| {
+            println!("Running ALL projectile hit OBSTACLE logic");
+
             if entities_despawned.get(&obs_en).is_none() {
                 commands.entity(obs_en).despawn();
                 entities_despawned.insert(obs_en);
@@ -217,13 +233,14 @@ fn manage_enemy_hit_friendly(
             }
         })
         .for_each(|(friendly_en, _)| {
+            println!("Running ENEMY hit FRIENDLY logic");
+
             if entities_despawned.get(&friendly_en).is_none() {
                 commands.entity(friendly_en).despawn();
                 entities_despawned.insert(friendly_en);
             }
         });
 }
-
 
 pub fn is_player(layers: CollisionLayers) -> bool {
     layers.contains_group(WorldPhysicsLayer::Player) && 

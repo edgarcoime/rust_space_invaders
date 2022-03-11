@@ -61,6 +61,8 @@ pub struct SpriteInfos {
     red_enemy: SpriteInfo,
     green_enemy: SpriteInfo,
     yellow_enemy: SpriteInfo,
+    alien_laser: SpriteInfo,
+    top_alien: SpriteInfo,
 }
 
 pub struct AssetScaling {
@@ -136,6 +138,8 @@ fn setup(
         green_enemy: load_image(&mut images, SPRITE_DIR, GREEN_ENEMY_SPRITE),
         yellow_enemy: load_image(&mut images, SPRITE_DIR, YELLOW_ENEMY_SPRITE),
         player_laser: load_image(&mut images, SPRITE_DIR, PLAYER_LASER_SPRITE),
+        alien_laser: load_image(&mut images, SPRITE_DIR, ENEMY_LASER_SPRITE),
+        top_alien: load_image(&mut images, SPRITE_DIR, TOP_EXTRA_ENEMY_SPRITE),
     });
 
     // position window
