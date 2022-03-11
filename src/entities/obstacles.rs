@@ -66,12 +66,12 @@ impl BlockBundle {
 pub struct ObstaclesPlugin;
 impl Plugin for ObstaclesPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_startup_system_to_stage(
-                StartupStage::PostStartup, 
-                setup_obstacles
-            )
-        ;
+        // app
+        //     .add_startup_system_to_stage(
+        //         StartupStage::PostStartup, 
+        //         setup_obstacles
+        //     )
+        // ;
     }
 }
 

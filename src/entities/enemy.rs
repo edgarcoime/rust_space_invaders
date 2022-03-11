@@ -22,7 +22,8 @@ impl Default for AlienFormationState {
     fn default() -> Self {
         Self {
             movement_direction: -1.,
-            movement_speed: MovementSpeed { value: 30. },
+            // movement_speed: MovementSpeed { value: 30. },
+            movement_speed: MovementSpeed { value: 100. },
             move_down: false,
             available_to_shoot: 2,
         }
@@ -86,6 +87,7 @@ impl AlienBundle {
                     .with_group(WorldPhysicsLayer::Enemy)
                     .with_mask(WorldPhysicsLayer::Player)
                     .with_mask(WorldPhysicsLayer::FriendlyProjectile)
+                    .with_mask(WorldPhysicsLayer::Obstacle)
             }
         }
     }

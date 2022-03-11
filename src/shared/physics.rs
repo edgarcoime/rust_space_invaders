@@ -29,6 +29,11 @@ impl Plugin for PhysicsPlugin {
                     .with_system(manage_friendly_projectiles_hit_enemy)
                     .with_system(manage_hostile_projectiles_hit_friendly)
             )
+            .add_system_set(
+                SystemSet::new()
+                    .with_system(manage_enemy_hit_obstacles)
+                    .with_system(manage_enemy_hit_friendly)
+            )
         ;
     }
 }
@@ -165,6 +170,59 @@ fn manage_hostile_projectiles_hit_friendly (
         });
 }
 
+fn manage_enemy_hit_obstacles(
+    mut commands: Commands, 
+    mut events: EventReader<CollisionEvent>,
+) {
+    let mut entities_despawned: HashSet<Entity> = HashSet::new();
+    events
+        .iter()
+        .filter(|e| e.is_started())
+        .filter_map(|event| {
+            let (entity_1, entity_2) = event.rigid_body_entities();
+            let (layers_1, layers_2) = event.collision_layers();
+            if is_obstacle(layers_1) && is_enemy(layers_2) {
+                Some((entity_1, entity_2))
+            } else if is_enemy(layers_1) && is_obstacle(layers_2) {
+                Some((entity_2, entity_1))
+            } else {
+                None
+            }
+        })
+        .for_each(|(obs_en, _)| {
+            if entities_despawned.get(&obs_en).is_none() {
+                commands.entity(obs_en).despawn();
+                entities_despawned.insert(obs_en);
+            }
+        });
+}
+
+fn manage_enemy_hit_friendly(
+    mut commands: Commands, 
+    mut events: EventReader<CollisionEvent>,
+) {
+    let mut entities_despawned: HashSet<Entity> = HashSet::new();
+    events
+        .iter()
+        .filter(|e| e.is_started())
+        .filter_map(|event| {
+            let (entity_1, entity_2) = event.rigid_body_entities();
+            let (layers_1, layers_2) = event.collision_layers();
+            if is_friendly(layers_1) && is_enemy(layers_2) {
+                Some((entity_1, entity_2))
+            } else if is_enemy(layers_1) && is_friendly(layers_2) {
+                Some((entity_2, entity_1))
+            } else {
+                None
+            }
+        })
+        .for_each(|(friendly_en, _)| {
+            if entities_despawned.get(&friendly_en).is_none() {
+                commands.entity(friendly_en).despawn();
+                entities_despawned.insert(friendly_en);
+            }
+        });
+}
 
 
 pub fn is_player(layers: CollisionLayers) -> bool {
